@@ -1,0 +1,11 @@
+{{define "body"}}
+<h1>Find Jan</h1>
+<ul>
+  {{range .Events}}
+  {{ $event := . }}
+  <li>
+    {{$event.TimeStamp}}
+  </li>
+  {{end}}
+</ul>
+{{end}}
