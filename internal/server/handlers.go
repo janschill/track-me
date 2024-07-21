@@ -49,8 +49,8 @@ func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	log.Printf("Payload received: %+v\n", payload)
-	s.Events.save(payload)
+	log.Printf("GarminOutbound payload received. %v event(s)\n", len(payload.Events))
+	s.Events.prepareAndSave(payload)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Payload received successfully."))
@@ -71,13 +71,16 @@ type IndexPageData struct {
 }
 
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
-	s.Events.mu.Lock()
-	defer s.Events.mu.Unlock()
-
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/index.html"))
 
+	events, err := db.GetAllEvents(s.Events.db)
+	if err != nil {
+		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		return
+	}
+
 	data := IndexPageData{
-		Events: s.Events.events,
+		Events: events,
 	}
 
 	tmpl.Execute(w, data)

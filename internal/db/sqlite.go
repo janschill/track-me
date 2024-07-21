@@ -16,31 +16,32 @@ func closeDB() {
 	}
 }
 
-func initializeDB(filePath string) {
-	var err error
-	Db, err = sql.Open("sqlite3", filePath)
+func InitializeDB(filePath string) (*sql.DB, error) {
+	Db, err := sql.Open("sqlite3", filePath)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	if err = Db.Ping(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	log.Println("Connected to the SQLite database successfully.")
+	log.Println("Database connection established")
+
+	return Db, nil
 }
 
 func DestroyDB(filePath string) {
-  err := os.Remove(filePath)
-  if err != nil {
-      log.Fatalf("Failed to delete database file: %v", err)
-  }
+	err := os.Remove(filePath)
+	if err != nil {
+		log.Fatalf("Failed to delete database file: %v", err)
+	}
 
-  log.Println("Database file deleted successfully.")
+	log.Println("Database file deleted successfully.")
 }
 
 func ResetDB(filePath string) {
-	initializeDB(filePath)
+	InitializeDB(filePath)
 	tables := []string{"events", "trips", "addresses"}
 	for _, table := range tables {
 		dropSQL := "DROP TABLE IF EXISTS " + table + ";"
@@ -52,12 +53,11 @@ func ResetDB(filePath string) {
 	}
 
 	log.Println("Database reset successfully.")
-  closeDB()
+	closeDB()
 }
 
-
 func CreateTables(filePath string) {
-	initializeDB(filePath)
+	InitializeDB(filePath)
 	createTripTableSQL := `CREATE TABLE IF NOT EXISTS trips (
         "id" INTEGER PRIMARY KEY AUTOINCREMENT,
         "startTime" DATETIME,
@@ -108,7 +108,7 @@ func CreateTables(filePath string) {
 	}
 
 	log.Println("Tables created successfully.")
-  closeDB()
+	closeDB()
 }
 
 func Seed(filePath string) {

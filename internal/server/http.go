@@ -1,6 +1,8 @@
 package server
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
 	"sync"
 
@@ -14,21 +16,11 @@ type httpServer struct {
 
 type EventStore struct {
 	mu     sync.Mutex
+	db     *sql.DB
 	events []db.Event
 }
 
-
-func (c *EventStore) saveEventToStorage(event db.Event) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	event.ID = int64(len(c.events)) + 1
-	c.events = append(c.events, event)
-
-	return nil
-}
-
-func (c *EventStore) save(payload GarminOutboundPayload) error {
+func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
 	for _, pEvent := range payload.Events {
 		event := db.Event{
 			TripID:      1,
@@ -37,14 +29,12 @@ func (c *EventStore) save(payload GarminOutboundPayload) error {
 			FreeText:    pEvent.FreeText,
 			TimeStamp:   pEvent.TimeStamp,
 			Addresses:   make([]db.Address, len(pEvent.Addresses)),
-			Point: db.Point{
-				Latitude:  pEvent.Point.Latitude,
-				Longitude: pEvent.Point.Longitude,
-				Altitude:  pEvent.Point.Altitude,
-				GpsFix:    pEvent.Point.GpsFix,
-				Course:    pEvent.Point.Course,
-				Speed:     pEvent.Point.Speed,
-			},
+			Latitude:  pEvent.Point.Latitude,
+			Longitude: pEvent.Point.Longitude,
+			Altitude:  pEvent.Point.Altitude,
+			GpsFix:    pEvent.Point.GpsFix,
+			Course:    pEvent.Point.Course,
+			Speed:     pEvent.Point.Speed,
 			Status: db.Status{
 				Autonomous:     pEvent.Status.Autonomous,
 				LowBattery:     pEvent.Status.LowBattery,
@@ -57,7 +47,7 @@ func (c *EventStore) save(payload GarminOutboundPayload) error {
 			event.Addresses[i] = db.Address{Address: addr.Address}
 		}
 
-		if err := c.saveEventToStorage(event); err != nil {
+		if err := event.Save(c.db); err != nil {
 			return err
 		}
 	}
@@ -66,8 +56,12 @@ func (c *EventStore) save(payload GarminOutboundPayload) error {
 }
 
 func HttpServer(addr string) *http.Server {
+	db, err := db.InitializeDB("./data/trips.db")
+	if err != nil {
+		log.Fatal(err)
+	}
 	server := &httpServer{
-		Events: &EventStore{},
+		Events: &EventStore{db: db},
 	}
 	fs := http.FileServer(http.Dir("assets/"))
 	router := mux.NewRouter()
