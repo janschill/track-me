@@ -2,6 +2,10 @@
 
 DB_PATH="./data/trips.db"
 
+run:
+	@echo "Starting server"
+	go run cmd/server/main.go
+
 reset-db:
 	@echo "Resetting database..."
 	go run cmd/db/main.go -dbpath=$(DB_PATH) -operation="reset"

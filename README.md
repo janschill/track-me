@@ -22,3 +22,11 @@ The Outbound services send periodically HTTP POST requests to your service.
 ### API
 
 >The Garmin data push service requires end users to setup a web service to handle incoming HTTP-POST requests from the Garmin gateway.
+
+## Development
+
+```sh
+go install github.com/air-verse/air@latest
+go env GOPATH
+# update air.toml to your go/bin/air location
+```
