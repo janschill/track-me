@@ -65,7 +65,7 @@ func HttpServer(addr string) *http.Server {
 	}
 	fs := http.FileServer(http.Dir("assets/"))
 	router := mux.NewRouter()
-	router.Handle("/static/", http.StripPrefix("/static/", fs))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
 	router.HandleFunc("/", server.handleIndex).Methods("GET")
 	router.HandleFunc("/events", server.handleEvents).Methods("GET")
