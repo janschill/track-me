@@ -68,6 +68,7 @@ func (s *httpServer) handleEvents(w http.ResponseWriter, r *http.Request) {
 
 type IndexPageData struct {
 	Events []db.Event
+	LastEvent db.Event
 }
 
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
@@ -79,8 +80,15 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	lastEvent, err := db.GetLastEvent(s.Events.db)
+	if err != nil {
+		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		return
+	}
+
 	data := IndexPageData{
 		Events: events,
+		LastEvent: lastEvent,
 	}
 
 	tmpl.Execute(w, data)

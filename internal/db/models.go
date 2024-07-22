@@ -42,6 +42,17 @@ type Status struct {
 	ResetDetected  int
 }
 
+func GetLastEvent(db *sql.DB) (Event, error) {
+	var e Event
+	row := db.QueryRow(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp, freeText FROM events ORDER BY timeStamp DESC LIMIT 1`)
+	err := row.Scan(&e.ID, &e.Latitude, &e.Longitude, &e.Altitude, &e.Speed, &e.Course, &e.GpsFix, &e.TimeStamp, &e.FreeText)
+	if err != nil {
+		log.Fatal(err)
+		return Event{}, err
+	}
+	return e, nil
+}
+
 func GetAllEvents(db *sql.DB) ([]Event, error) {
 	rows, err := db.Query(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp, freeText FROM events ORDER BY timeStamp`)
 	if err != nil {
