@@ -1,5 +1,28 @@
 {{define "body"}}
 <h1>Find Jan</h1>
+Last known location: {{ .LastEvent }}
+
+<div id="mapid" class="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  // 46.52358 -113.59432
+  const latitude = {{ .LastEvent.Latitude }};
+  const longitude = {{ .LastEvent.Longitude }};
+  // Central latitude and longitude for the USA
+  const centralLatitude = 37.0902;
+  const centralLongitude = -95.7129;
+  const mymap = L.map('mapid').setView([centralLatitude, centralLongitude], 4);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 18,
+  }).addTo(mymap);
+
+  L.marker([latitude, longitude]).addTo(mymap)
+  .bindPopup('Last known location').openPopup();
+</script>
+
+<h2>All events</h2>
 <ul>
   {{range .Events}}
   {{ $event := . }}
