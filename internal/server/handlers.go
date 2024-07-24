@@ -24,7 +24,7 @@ type GarminOutboundPayload struct {
 		Point struct {
 			Latitude  float64 `json:"latitude"`
 			Longitude float64 `json:"longitude"`
-			Altitude  float64 `json:"altitude"`
+			Altitude  int     `json:"altitude"`
 			GpsFix    int     `json:"gpsFix"`
 			Course    int     `json:"course"`
 			Speed     int     `json:"speed"`

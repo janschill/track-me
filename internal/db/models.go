@@ -25,7 +25,7 @@ type Event struct {
 	Status      Status
 	Latitude    float64
 	Longitude   float64
-	Altitude    float64
+	Altitude    int
 	GpsFix      int
 	Course      int
 	Speed       int

@@ -81,7 +81,7 @@ func CreateTables(filePath string) {
         "timeStamp" INTEGER NOT NULL,
         "latitude" REAL,
         "longitude" REAL,
-        "altitude" REAL,
+        "altitude" INTEGER,
         "gpsFix" INTEGER,
         "course" REAL,
         "speed" REAL,
@@ -127,7 +127,7 @@ func Seed(filePath string) {
 	}
 	defer Db.Close()
 
-	file, err := os.Open("./data/visited_points.txt")
+	file, err := os.Open("./data/route_points.txt")
 	if err != nil {
 		log.Fatal("Failed to open file:", err)
 	}
@@ -154,7 +154,7 @@ func Seed(filePath string) {
 		}
 
 		_, err = Db.Exec("INSERT INTO events(tripId, imei, messageCode, timeStamp, latitude, longitude, altitude, gpsFix, course, speed, autonomous, lowBattery, intervalChange, resetDetected) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-			1, "fake-imei", 0, time.Now().Unix(), latitude, longitude, elevation, 0, 0, 0, 0, 0, 0, 0)
+			1, "fake-imei", 0, time.Now().Unix(), latitude, longitude, int(elevation), 0, 0, 0, 0, 0, 0, 0)
 		if err != nil {
 			log.Fatal("Failed to insert into events table:", err)
 		}
