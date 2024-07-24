@@ -25,8 +25,10 @@ The Outbound services send periodically HTTP POST requests to your service.
 
 ## Development
 
+Use [Air](https://github.com/air-verse/air) for server hot reloading.
+
 ```sh
 go install github.com/air-verse/air@latest
-go env GOPATH
-# update air.toml to your go/bin/air location
+# add go/bin/air binary as an alias
+echo "alias air=$(go env GOPATH)" >> ~/.zshrc
 ```
