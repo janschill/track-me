@@ -31,7 +31,7 @@ type Address struct {
 type Point struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
-	Altitude  float64 `json:"altitude"`
+	Altitude  int     `json:"altitude"`
 	GpsFix    int     `json:"gpsFix"`
 	Course    int     `json:"course"`
 	Speed     int     `json:"speed"`
@@ -44,31 +44,39 @@ type Status struct {
 	ResetDetected  int `json:"resetDetected"`
 }
 
-func generateMockEvent() IPCOutbound {
-	return IPCOutbound{
-		Version: "1.0",
-		Events: []Event{
-			{
-				Imei:        "100000000000001",
-				MessageCode: rand.Intn(100), // Example: Random message code
-				FreeText:    "Example text",
-				TimeStamp:   time.Now().Unix(),
-				Addresses:   []Address{{Address: "example@example.com"}},
-				Point: Point{
-					Latitude:  randomFloatInRange(-90, 90),
-					Longitude: randomFloatInRange(-180, 180),
-					Altitude:  randomFloatInRange(0, 10000),
-					GpsFix:    rand.Intn(5),
-					Course:    rand.Intn(360),
-					Speed:     rand.Intn(120),
-				},
-				Status: Status{
-					Autonomous:     0,
-					LowBattery:     0,
-					IntervalChange: 0,
-					ResetDetected:  0,
-				},
-			},
+var lastLatitude float64 = 31.3331459241914
+var lastLongitude float64 = -108.530207744702
+var lastAltitude int = 1421
+
+func generateMockEvent() Event {
+	latitudeDeviation := randomFloatInRange(-0.0001, 0.0001)
+	longitudeDeviation := randomFloatInRange(-0.0001, 0.0001)
+	altitudeDeviation := rand.Intn(3) - 1 // -1, 0, or 1
+
+	// Update last known coordinates
+	lastLatitude += latitudeDeviation
+	lastLongitude += longitudeDeviation
+	lastAltitude += altitudeDeviation
+
+	return Event{
+		Imei:        "fake-imei",
+		MessageCode: rand.Intn(100),
+		FreeText:    "Example text",
+		TimeStamp:   time.Now().Unix(),
+		Addresses:   []Address{{Address: "example@example.com"}},
+		Point: Point{
+			Latitude:  lastLatitude,
+			Longitude: lastLongitude,
+			Altitude:  lastAltitude,
+			GpsFix:    rand.Intn(5),
+			Course:    rand.Intn(360),
+			Speed:     rand.Intn(120),
+		},
+		Status: Status{
+			Autonomous:     0,
+			LowBattery:     0,
+			IntervalChange: 0,
+			ResetDetected:  0,
 		},
 	}
 }
@@ -77,8 +85,15 @@ func randomFloatInRange(min, max float64) float64 {
 	return min + rand.Float64()*(max-min)
 }
 
-func sendMockEvent(event IPCOutbound, url string) {
-	jsonData, err := json.Marshal(event)
+var eventQueue []Event
+
+func sendMockEvents(events []Event, url string) {
+	ipcOutbound := IPCOutbound{
+		Version: "1.0",
+		Events:  events,
+	}
+
+	jsonData, err := json.Marshal(ipcOutbound)
 	if err != nil {
 		fmt.Println("Error marshalling event:", err)
 		return
@@ -91,15 +106,23 @@ func sendMockEvent(event IPCOutbound, url string) {
 	}
 	defer resp.Body.Close()
 
+	eventQueue = nil
 	fmt.Println("POST request sent. Status Code:", resp.StatusCode)
 }
 
 func main() {
 	targetURL := "http://localhost:8080/garmin-outbound"
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(2 * time.Second)
 
 	for range ticker.C {
 		mockEvent := generateMockEvent()
-		sendMockEvent(mockEvent, targetURL)
+		eventQueue = append(eventQueue, mockEvent)
+
+		// Randomly decide to simulate missed communication
+		if rand.Intn(10) < 8 { // 80% chance to send
+			sendMockEvents(eventQueue, targetURL)
+		} else {
+			fmt.Println("Simulating missed communication...")
+		}
 	}
 }

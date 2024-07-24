@@ -6,6 +6,10 @@ run:
 	@echo "Starting server"
 	go run cmd/server/main.go
 
+run-mock:
+	@echo "Starting Garmin Outbound mock service"
+	go run cmd/mockservice/mock_service.go
+
 reset-db:
 	@echo "Resetting database..."
 	go run cmd/db/main.go -dbpath=$(DB_PATH) -operation="reset"
