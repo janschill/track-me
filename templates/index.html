@@ -1,34 +1,35 @@
 {{define "body"}}
-<h1>Find Jan</h1>
-Last known location: {{ .LastEvent }}
+<div class="parent">
+  <aside class="aside-container">
+    <h1>The Great Divide Mountain Bike Route </h1>
+    <article>
+      <p>For the next 30 days I will be riding my bicycle with two friends from Canada to Mexico.</p>
+      <p>You can see the planned route in blue and the completed part in red on the map. I am carrying a GPS tracker that will update the map with my live location and all other stats every 10 seconds. This GPS tracker can also send and receive messages, further down is a way of sending me messages either through space via satellites directly to the tracker or just simply through copper and fiber optic to this website.</p>
+    </article>
+    <section>
+      <h2>Planned Route</h2>
+      <div></div>
+    </section>
+    <section>
+      <h2>Actual Ride</h2>
+      <div></div>
+    </section>
+  </aside>
+  <div class="map-container">
+    <div id="mapid" class="map"></div>
+  </div>
+  <div class="messages-container">
+    <div>Test</div>
+    <div>Test</div>
+    <div>Test</div>
+  </div>
+  <div class="days-container">
+    <div>Test</div>
+    <div>Test</div>
+    <div>Test</div>
+  </div>
+</div>
 
-<div id="mapid" class="map"></div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-  // 46.52358 -113.59432
-  const latitude = {{ .LastEvent.Latitude }};
-  const longitude = {{ .LastEvent.Longitude }};
-  // Central latitude and longitude for the USA
-  const centralLatitude = 37.0902;
-  const centralLongitude = -95.7129;
-  const mymap = L.map('mapid').setView([centralLatitude, centralLongitude], 4);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 18,
-  }).addTo(mymap);
-
-  L.marker([latitude, longitude]).addTo(mymap)
-  .bindPopup('Last known location').openPopup();
-</script>
-
-<h2>All events</h2>
-<ul>
-  {{range .Events}}
-  {{ $event := . }}
-  <li>
-    {{$event}}
-  </li>
-  {{end}}
-</ul>
 {{end}}
+
