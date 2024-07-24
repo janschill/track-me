@@ -1,3 +1,77 @@
+:root {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --background-color: #f8f9fa;
+  --text-color: #333;
+  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  /* Component specific colors */
+  --button-bg-color: var(--primary-color);
+  --button-text-color: #fff;
+  --header-bg-color: var(--secondary-color);
+  --header-text-color: var(--background-color);
+}
+
+body {
+  padding: 20px;
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font-size: 16px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-size: 1.115em;
+}
+
+p {
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+
 .map {
-  height: 400px;
+  height: 85vh;
+}
+
+.map, .map-container, .messages-container, .days-container, .aside-container {
+  width: 100%;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Medium screens (between 600px and 1000px) */
+@media (min-width: 600px) and (max-width: 999px) {
+  .parent {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-gap: 20px;
+  }
+  .map-container { grid-area: 1 / 1 / 2 / 2; }
+  .aside-container { grid-area: 2 / 1 / 3 / 2; }
+  .messages-container, .days-container {
+    grid-area: auto;
+  }
+  .messages-container { grid-area: 3 / 1 / 4 / 2; }
+  .days-container { grid-area: 4 / 1 / 5 / 2; }
+}
+
+/* Large screens (min-width of 1000px) */
+@media (min-width: 1000px) {
+  .parent {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    grid-column-gap: 20px;
+    grid-row-gap: 20px;
+  }
+  .map-container { grid-area: 1 / 2 / 4 / 6; }
+  .messages-container { grid-area: 4 / 2 / 5 / 4; }
+  .days-container { grid-area: 4 / 4 / 5 / 6; }
+  .aside-container { grid-area: 1 / 1 / 5 / 2; }
 }
