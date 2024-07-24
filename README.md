@@ -6,11 +6,10 @@
 ## Stack
 
 - go
-- Sqlite
-- Docker
-- DigitalOcean
-- _BetterStack_
-- _Tailwind_
+- SQLite
+- leaflet
+  - leaflet-gpx
+  - leaflet-elevation
 
 ## IPC Inbound & Outbound
 
