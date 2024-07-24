@@ -99,6 +99,19 @@ func CreateTables(filePath string) {
       FOREIGN KEY (eventId) REFERENCES Event(id)
     );`
 
+	createEventsCacheTableSQL := `CREATE TABLE IF NOT EXISTS events_cache (
+      date DATE PRIMARY KEY,
+			points_data TEXT NOT NULL
+    );`
+
+	createMessagesTableSQL := `CREATE TABLE IF NOT EXISTS messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      timeStamp INTEGER NOT NULL,
+      name TEXT,
+      message TEXT,
+      sentToGarmin INTEGER,
+    );`
+
 	_, err = Db.Exec(createTripTableSQL)
 	if err != nil {
 		log.Fatal("Failed to create trips table:", err)
@@ -112,6 +125,16 @@ func CreateTables(filePath string) {
 	_, err = Db.Exec(createAddressTableSQL)
 	if err != nil {
 		log.Fatal("Failed to create addresses table:", err)
+	}
+
+	_, err = Db.Exec(createEventsCacheTableSQL)
+	if err != nil {
+		log.Fatal("Failed to create events_cache table:", err)
+	}
+
+	_, err = Db.Exec(createMessagesTableSQL)
+	if err != nil {
+		log.Fatal("Failed to create messages table:", err)
 	}
 
 	log.Println("Tables created successfully.")
@@ -133,6 +156,10 @@ func Seed(filePath string) {
 	}
 	defer file.Close()
 
+	startDate := time.Date(2024, time.September, 8, 0, 0, 0, 0, time.UTC)
+	// every 1500 entrys increment day
+	rowCount := 0
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -153,11 +180,16 @@ func Seed(filePath string) {
 			log.Fatal("Failed to parse latitude:", err)
 		}
 
+		currentDate := startDate.Add(time.Hour * 24 * time.Duration(rowCount/1500))
+		timeStamp := currentDate.Unix()
+
 		_, err = Db.Exec("INSERT INTO events(tripId, imei, messageCode, timeStamp, latitude, longitude, altitude, gpsFix, course, speed, autonomous, lowBattery, intervalChange, resetDetected) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-			1, "fake-imei", 0, time.Now().Unix(), latitude, longitude, int(elevation), 0, 0, 0, 0, 0, 0, 0)
+			1, "fake-imei", 0, timeStamp, latitude, longitude, int(elevation), 0, 0, 0, 0, 0, 0, 0)
 		if err != nil {
 			log.Fatal("Failed to insert into events table:", err)
 		}
+
+		rowCount++
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal("Error reading file:", err)

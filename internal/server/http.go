@@ -11,13 +11,14 @@ import (
 )
 
 type httpServer struct {
-	Events *EventStore
+	EventStore *EventStore
 }
 
 type EventStore struct {
 	mu     sync.Mutex
 	db     *sql.DB
 	events []db.Event
+	cache  map[int]db.Event
 }
 
 func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
@@ -29,12 +30,12 @@ func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
 			FreeText:    pEvent.FreeText,
 			TimeStamp:   pEvent.TimeStamp,
 			Addresses:   make([]db.Address, len(pEvent.Addresses)),
-			Latitude:  pEvent.Point.Latitude,
-			Longitude: pEvent.Point.Longitude,
-			Altitude:  pEvent.Point.Altitude,
-			GpsFix:    pEvent.Point.GpsFix,
-			Course:    pEvent.Point.Course,
-			Speed:     pEvent.Point.Speed,
+			Latitude:    pEvent.Point.Latitude,
+			Longitude:   pEvent.Point.Longitude,
+			Altitude:    pEvent.Point.Altitude,
+			GpsFix:      pEvent.Point.GpsFix,
+			Course:      pEvent.Point.Course,
+			Speed:       pEvent.Point.Speed,
 			Status: db.Status{
 				Autonomous:     pEvent.Status.Autonomous,
 				LowBattery:     pEvent.Status.LowBattery,
@@ -55,13 +56,21 @@ func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
 
 }
 
+func reduce(events []db.Event) []db.Event {
+	return events
+}
+
+func fillCache() {
+
+}
+
 func HttpServer(addr string) *http.Server {
 	db, err := db.InitializeDB("./data/trips.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 	server := &httpServer{
-		Events: &EventStore{db: db},
+		EventStore: &EventStore{db: db},
 	}
 	fs := http.FileServer(http.Dir("assets/"))
 	router := mux.NewRouter()

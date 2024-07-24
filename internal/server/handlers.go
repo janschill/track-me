@@ -52,17 +52,17 @@ func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request
 	}
 
 	log.Printf("GarminOutbound payload received. %v event(s)\n", len(payload.Events))
-	s.Events.prepareAndSave(payload)
+	s.EventStore.prepareAndSave(payload)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Payload received successfully."))
 }
 
 func (s *httpServer) handleEvents(w http.ResponseWriter, r *http.Request) {
-	s.Events.mu.Lock()
-	defer s.Events.mu.Unlock()
+	s.EventStore.mu.Lock()
+	defer s.EventStore.mu.Unlock()
 
-	if err := json.NewEncoder(w).Encode(s.Events.events); err != nil {
+	if err := json.NewEncoder(w).Encode(s.EventStore.events); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		log.Printf("Error encoding response: %v", err)
 	}
@@ -77,13 +77,13 @@ type IndexPageData struct {
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/index.html"))
 
-	events, err := db.GetAllEvents(s.Events.db)
+	events, err := db.GetAllEvents(s.EventStore.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
 		return
 	}
 
-	lastEvent, err := db.GetLastEvent(s.Events.db)
+	lastEvent, err := db.GetLastEvent(s.EventStore.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
 		return
