@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"text/template"
+
+	// "text/template"
+	"html/template"
 
 	"github.com/janschill/track-me/internal/db"
 )
@@ -22,7 +24,7 @@ type GarminOutboundPayload struct {
 		Point struct {
 			Latitude  float64 `json:"latitude"`
 			Longitude float64 `json:"longitude"`
-			Altitude  int     `json:"altitude"`
+			Altitude  float64 `json:"altitude"`
 			GpsFix    int     `json:"gpsFix"`
 			Course    int     `json:"course"`
 			Speed     int     `json:"speed"`
@@ -67,8 +69,9 @@ func (s *httpServer) handleEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 type IndexPageData struct {
-	Events []db.Event
-	LastEvent db.Event
+	Events     []db.Event
+	LastEvent  db.Event
+	EventsJSON template.JS
 }
 
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
@@ -86,9 +89,17 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	eventsJSON, err := json.Marshal(events)
+	if err != nil {
+		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		log.Printf("Error marshalling events: %v", err)
+		return
+	}
+
 	data := IndexPageData{
-		Events: events,
-		LastEvent: lastEvent,
+		Events:     events,
+		LastEvent:  lastEvent,
+		EventsJSON: template.JS(eventsJSON),
 	}
 
 	tmpl.Execute(w, data)
