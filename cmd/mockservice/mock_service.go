@@ -31,7 +31,7 @@ type Address struct {
 type Point struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
-	Altitude  int     `json:"altitude"`
+	Altitude  float64 `json:"altitude"`
 	GpsFix    int     `json:"gpsFix"`
 	Course    int     `json:"course"`
 	Speed     int     `json:"speed"`
@@ -57,7 +57,7 @@ func generateMockEvent() IPCOutbound {
 				Point: Point{
 					Latitude:  randomFloatInRange(-90, 90),
 					Longitude: randomFloatInRange(-180, 180),
-					Altitude:  rand.Intn(10000),
+					Altitude:  randomFloatInRange(0, 10000),
 					GpsFix:    rand.Intn(5),
 					Course:    rand.Intn(360),
 					Speed:     rand.Intn(120),

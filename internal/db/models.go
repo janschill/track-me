@@ -23,12 +23,12 @@ type Event struct {
 	TimeStamp   int64
 	Addresses   []Address
 	Status      Status
-	Latitude  float64
-	Longitude float64
-	Altitude  int
-	GpsFix    int
-	Course    int
-	Speed     int
+	Latitude    float64
+	Longitude   float64
+	Altitude    float64
+	GpsFix      int
+	Course      int
+	Speed       int
 }
 
 type Address struct {
@@ -44,8 +44,8 @@ type Status struct {
 
 func GetLastEvent(db *sql.DB) (Event, error) {
 	var e Event
-	row := db.QueryRow(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp, freeText FROM events ORDER BY timeStamp DESC LIMIT 1`)
-	err := row.Scan(&e.ID, &e.Latitude, &e.Longitude, &e.Altitude, &e.Speed, &e.Course, &e.GpsFix, &e.TimeStamp, &e.FreeText)
+	row := db.QueryRow(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp FROM events ORDER BY timeStamp DESC LIMIT 1`)
+	err := row.Scan(&e.ID, &e.Latitude, &e.Longitude, &e.Altitude, &e.Speed, &e.Course, &e.GpsFix, &e.TimeStamp)
 	if err != nil {
 		log.Fatal(err)
 		return Event{}, err
@@ -54,7 +54,7 @@ func GetLastEvent(db *sql.DB) (Event, error) {
 }
 
 func GetAllEvents(db *sql.DB) ([]Event, error) {
-	rows, err := db.Query(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp, freeText FROM events ORDER BY timeStamp`)
+	rows, err := db.Query(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp FROM events ORDER BY timeStamp`)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -65,7 +65,7 @@ func GetAllEvents(db *sql.DB) ([]Event, error) {
 	for rows.Next() {
 		var e Event
 
-		err := rows.Scan(&e.ID, &e.Latitude, &e.Longitude, &e.Altitude, &e.Speed, &e.Course, &e.GpsFix, &e.TimeStamp, &e.FreeText)
+		err := rows.Scan(&e.ID, &e.Latitude, &e.Longitude, &e.Altitude, &e.Speed, &e.Course, &e.GpsFix, &e.TimeStamp)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,20 +1,24 @@
 package db
 
 import (
+	"bufio"
 	"database/sql"
 	"log"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var Db *sql.DB
+// var Db *sql.DB
 
-func closeDB() {
-	if err := Db.Close(); err != nil {
-		log.Fatal("Failed to close database connection:", err)
-	}
-}
+// func closeDB() {
+// 	if err := Db.Close(); err != nil {
+// 		log.Fatal("Failed to close database connection:", err)
+// 	}
+// }
 
 func InitializeDB(filePath string) (*sql.DB, error) {
 	Db, err := sql.Open("sqlite3", filePath)
@@ -40,24 +44,27 @@ func DestroyDB(filePath string) {
 	log.Println("Database file deleted successfully.")
 }
 
-func ResetDB(filePath string) {
-	InitializeDB(filePath)
-	tables := []string{"events", "trips", "addresses"}
-	for _, table := range tables {
-		dropSQL := "DROP TABLE IF EXISTS " + table + ";"
-		_, err := Db.Exec(dropSQL)
-		if err != nil {
-			log.Fatalf("Failed to drop %s table: %v", table, err)
-		}
-		log.Printf("%s table dropped", table)
-	}
+// func ResetDB(filePath string) {
+// 	InitializeDB(filePath)
+// 	tables := []string{"events", "trips", "addresses"}
+// 	for _, table := range tables {
+// 		dropSQL := "DROP TABLE IF EXISTS " + table + ";"
+// 		_, err := Db.Exec(dropSQL)
+// 		if err != nil {
+// 			log.Fatalf("Failed to drop %s table: %v", table, err)
+// 		}
+// 		log.Printf("%s table dropped", table)
+// 	}
 
-	log.Println("Database reset successfully.")
-	closeDB()
-}
+// 	log.Println("Database reset successfully.")
+// 	closeDB()
+// }
 
 func CreateTables(filePath string) {
-	InitializeDB(filePath)
+	Db, err := sql.Open("sqlite3", filePath)
+	if err != nil {
+		return
+	}
 	createTripTableSQL := `CREATE TABLE IF NOT EXISTS trips (
         "id" INTEGER PRIMARY KEY AUTOINCREMENT,
         "startTime" DATETIME,
@@ -92,7 +99,7 @@ func CreateTables(filePath string) {
       FOREIGN KEY (eventId) REFERENCES Event(id)
     );`
 
-	_, err := Db.Exec(createTripTableSQL)
+	_, err = Db.Exec(createTripTableSQL)
 	if err != nil {
 		log.Fatal("Failed to create trips table:", err)
 	}
@@ -108,9 +115,51 @@ func CreateTables(filePath string) {
 	}
 
 	log.Println("Tables created successfully.")
-	closeDB()
+	if err := Db.Close(); err != nil {
+		log.Fatal("Failed to close database connection:", err)
+	}
 }
 
 func Seed(filePath string) {
+	Db, err := sql.Open("sqlite3", filePath)
+	if err != nil {
+		return
+	}
+	defer Db.Close()
 
+	file, err := os.Open("./data/visited_points.txt")
+	if err != nil {
+		log.Fatal("Failed to open file:", err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.Split(line, ", ")
+		latitudeStr := strings.Split(parts[0], ": ")[1]
+		longitudeStr := strings.Split(parts[1], ": ")[1]
+		elevationStr := strings.Split(parts[2], ": ")[1]
+		latitude, err := strconv.ParseFloat(latitudeStr, 64)
+		if err != nil {
+			log.Fatal("Failed to parse latitude:", err)
+		}
+		longitude, err := strconv.ParseFloat(longitudeStr, 64)
+		if err != nil {
+			log.Fatal("Failed to parse latitude:", err)
+		}
+		elevation, err := strconv.ParseFloat(elevationStr, 64)
+		if err != nil {
+			log.Fatal("Failed to parse latitude:", err)
+		}
+
+		_, err = Db.Exec("INSERT INTO events(tripId, imei, messageCode, timeStamp, latitude, longitude, altitude, gpsFix, course, speed, autonomous, lowBattery, intervalChange, resetDetected) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+			1, "fake-imei", 0, time.Now().Unix(), latitude, longitude, elevation, 0, 0, 0, 0, 0, 0, 0)
+		if err != nil {
+			log.Fatal("Failed to insert into events table:", err)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatal("Error reading file:", err)
+	}
 }
