@@ -48,8 +48,8 @@ jobs:
               echo "New binary test passed. Proceeding with deployment."
               sudo systemctl stop trackme.service
               mv ~/track-me-temp/trackme /root/track-me/trackme
-              mv ~/track-me-temp/assets/* /root/track-me/assets
-              mv ~/track-me-temp/templates/* /root/track-me/templates
+              mv -r ~/track-me-temp/assets/* /root/track-me/assets
+              mv -r ~/track-me-temp/templates/* /root/track-me/templates
               sudo systemctl start trackme.service
             else
               echo "New binary test failed. Aborting deployment."
