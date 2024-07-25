@@ -4,10 +4,12 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/janschill/track-me/internal/db"
+	"github.com/joho/godotenv"
 )
 
 type httpServer struct {
@@ -67,8 +69,19 @@ func fillCache() {
 
 }
 
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+}
+
 func HttpServer(addr string) *http.Server {
-	db, err := db.InitializeDB("./data/trips.db")
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		log.Fatal("DB_PATH environment variable is not set")
+	}
+
+	db, err := db.InitializeDB(dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}
