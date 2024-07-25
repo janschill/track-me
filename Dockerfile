@@ -17,7 +17,7 @@ RUN go build -o trackme ./cmd/server
 
 FROM alpine:latest
 
-WORKDIR /root/
+WORKDIR /app/
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/trackme .
