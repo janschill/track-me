@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 
 	// "text/template"
 	"html/template"
@@ -58,6 +60,43 @@ func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request
 	w.Write([]byte("Payload received successfully."))
 }
 
+func (s *httpServer) handleMessages(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method is not supported.", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Message received: %s\n", r.FormValue("message"))
+	log.Printf("Name: %s\n", r.FormValue("name"))
+	log.Printf("Sent to Garmin: %v\n", r.FormValue("sentToGarmin"))
+	sentToGarmin, err := strconv.ParseBool(r.FormValue("sentToGarmin"))
+	if err != nil {
+		sentToGarmin = false
+	}
+
+	message := db.Message{
+		TripID:       1,
+		Message:      r.FormValue("message"),
+		Name:         r.FormValue("name"),
+		TimeStamp:    time.Now().Unix(),
+		SentToGarmin: sentToGarmin,
+	}
+
+	if message.SentToGarmin {
+		log.Printf("Sending message to Garmin: %s\n", message.Message)
+	}
+
+	message.Save(s.EventStore.db)
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Message received successfully."))
+}
+
 func (s *httpServer) handleEvents(w http.ResponseWriter, r *http.Request) {
 	s.EventStore.mu.Lock()
 	defer s.EventStore.mu.Unlock()
@@ -69,6 +108,7 @@ func (s *httpServer) handleEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 type IndexPageData struct {
+	Messages   []db.Message
 	Events     []db.Event
 	LastEvent  db.Event
 	EventsJSON template.JS
@@ -76,6 +116,12 @@ type IndexPageData struct {
 
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/index.html"))
+
+	messages, err := db.GetAllMessages(s.EventStore.db)
+	if err != nil {
+		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		return
+	}
 
 	events, err := db.GetAllEvents(s.EventStore.db)
 	if err != nil {
@@ -97,6 +143,7 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := IndexPageData{
+		Messages:   messages,
 		Events:     events,
 		LastEvent:  lastEvent,
 		EventsJSON: template.JS(eventsJSON),

@@ -42,6 +42,41 @@ type Status struct {
 	ResetDetected  int
 }
 
+type Message struct {
+	ID           int64
+	TripID       int64
+	Message      string
+	Name         string
+	TimeStamp    int64
+	SentToGarmin bool
+}
+
+func GetAllMessages(db *sql.DB) ([]Message, error) {
+	return nil, nil
+	rows, err := db.Query(`SELECT id, tripId, message, name, timeStamp, sentToGarmin FROM messages ORDER BY timeStamp`)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var messages []Message
+	for rows.Next() {
+		var m Message
+
+		err := rows.Scan(&m.ID, &m.TripID, &m.Message, &m.Name, &m.TimeStamp, &m.SentToGarmin)
+		if err != nil {
+			log.Fatal(err)
+		}
+		messages = append(messages, m)
+	}
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return messages, nil
+}
+
 func GetLastEvent(db *sql.DB) (Event, error) {
 	var e Event
 	row := db.QueryRow(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp FROM events ORDER BY timeStamp DESC LIMIT 1`)
@@ -76,6 +111,26 @@ func GetAllEvents(db *sql.DB) ([]Event, error) {
 	}
 
 	return events, nil
+}
+
+func (m *Message) Save(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal("Couldn't begin save transaction for Message")
+		return err
+	}
+	stmt, err := tx.Prepare("INSERT INTO messages(tripId, message, name, timeStamp, sentToGarmin) VALUES(?,?,?,?,?)")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(m.TripID, m.Message, m.Name, m.TimeStamp, m.SentToGarmin)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Saving new record to database")
+	return tx.Commit()
 }
 
 func (e *Event) Save(db *sql.DB) error {

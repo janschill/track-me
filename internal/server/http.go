@@ -21,6 +21,9 @@ type EventStore struct {
 	cache  map[int]db.Event
 }
 
+func (s *httpServer) saveMessage(w http.ResponseWriter, r *http.Request) {
+}
+
 func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
 	for _, pEvent := range payload.Events {
 		event := db.Event{
@@ -78,6 +81,7 @@ func HttpServer(addr string) *http.Server {
 
 	router.HandleFunc("/", server.handleIndex).Methods("GET")
 	router.HandleFunc("/events", server.handleEvents).Methods("GET")
+	router.HandleFunc("/messages", server.handleMessages).Methods("POST")
 	router.HandleFunc("/garmin-outbound", server.handleGarminOutbound).Methods("POST")
 
 	return &http.Server{

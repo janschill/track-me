@@ -106,10 +106,12 @@ func CreateTables(filePath string) {
 
 	createMessagesTableSQL := `CREATE TABLE IF NOT EXISTS messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tripId INTEGER NOT NULL,
       timeStamp INTEGER NOT NULL,
       name TEXT,
       message TEXT,
       sentToGarmin INTEGER,
+      FOREIGN KEY(tripId) REFERENCES trips(id)
     );`
 
 	_, err = Db.Exec(createTripTableSQL)

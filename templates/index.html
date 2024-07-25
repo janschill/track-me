@@ -19,9 +19,25 @@
     <div id="mapid" class="map"></div>
   </div>
   <div class="messages-container">
-    <div>Test</div>
-    <div>Test</div>
-    <div>Test</div>
+    <h2>Messages</h2>
+    <form action="/messages" method="post">
+      <label for="message">Message:</label>
+      <input type="text" id="message" name="message"><br>
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name"><br>
+      <label for="sentToGarmin">Sent to Garmin:</label>
+      <input type="checkbox" id="sentToGarmin" name="sentToGarmin" value="true"><br>
+      <input type="submit" value="Submit">
+    </form>
+    <ul>
+      {{ range .Messages }}
+      <li class="message">
+        <p>{{ .Name }} wrote</p>
+        <p>{{ .Message }}</p>
+        <p>{{ .Date }}</p>
+        {{ end }}
+      </li>
+    </ul>
   </div>
   <div class="days-container">
     <div>Test</div>
