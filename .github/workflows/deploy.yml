@@ -1,0 +1,47 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.21'
+
+    - name: Build the application
+      run: CGO_ENABLED=1 GOOS=linux GOARCH=arm64 go build -o trackme ./cmd/server
+
+    - name: Deploy to server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+        ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p ~/track-me-temp"
+        scp -r trackme assets templates $SERVER_USER@$SERVER_IP:~/track-me-temp/
+        ssh $SERVER_USER@$SERVER_IP << 'EOF'
+          ~/track-me-temp/trackme --ping
+          if [ $? -eq 0 ]; then
+            echo "New binary test passed. Proceeding with deployment."
+            sudo systemctl stop trackme.service
+            mv ~/track-me-temp/trackme /root/track-me/trackme
+            mv ~/track-me-temp/assets /root/track-me/assets
+            mv ~/track-me-temp/templates /root/track-me/templates
+            sudo systemctl start trackme.service
+          else
+            echo "New binary test failed. Aborting deployment."
+            exit 1
+          fi
+          rm -rf ~/track-me-temp
+        EOF
