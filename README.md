@@ -8,8 +8,8 @@
 - go
 - SQLite
 - leaflet
-  - leaflet-gpx
-  - leaflet-elevation
+  - [leaflet-gpx](https://github.com/mpetazzoni/leaflet-gpx)
+  - [leaflet-elevation](https://github.com/Raruto/leaflet-elevation)
 
 ## IPC Inbound & Outbound
 
