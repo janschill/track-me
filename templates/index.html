@@ -4,7 +4,10 @@
     <h1>The Great Divide Mountain Bike Route </h1>
     <article class="mb-20">
       <p>For the next 30 days I will be riding my bicycle with two friends from Canada to Mexico.</p>
-      <p>You can see the planned route in blue and the completed part in red on the map. I am carrying a GPS tracker that will update the map with my live location and all other stats every 10 seconds. This GPS tracker can also send and receive messages, further down is a way of sending me messages either through space via satellites directly to the tracker or just simply through copper and fiber optic to this website.</p>
+      <p>You can see the planned route in blue and the completed part in red on the map. I am carrying a GPS tracker
+        that will update the map with my live location and all other stats every 10 seconds. This GPS tracker can also
+        send and receive messages, further down is a way of sending me messages either through space via satellites
+        directly to the tracker or just simply through copper and fiber optic to this website.</p>
     </article>
     <section class="mb-20">
       <h2>Planned Route</h2>
@@ -36,6 +39,16 @@
     <section>
       <h2>Actual Ride</h2>
       <article class="block col-2">
+        <section class="row">
+          <div class="col">
+            {{ if .Ride.IsMoving }}
+              Yes
+            {{ else }}
+              No
+            {{ end }}
+            <small class="label">Currently Moving</small></div>
+          <div class="col">{{ .Ride.LastPing }} minute(s) ago<small class="label">Last Signal</small></div>
+        </section>
         <section class="row">
           <div class="col">{{ .Ride.Distance }} km<small class="label">Distance</small></div>
           <div class="col">{{ .Ride.Progress }} %<small class="label">Progress</small></div>
@@ -90,4 +103,3 @@
 
 
 {{end}}
-

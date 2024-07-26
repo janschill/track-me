@@ -14,6 +14,8 @@ import (
 )
 
 type Ride struct {
+	IsMoving      bool
+	LastPing      int64
 	Distance      int64
 	Progress      float64
 	ElevationGain int64
@@ -174,6 +176,8 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		LastEvent:  lastEvent,
 		EventsJSON: template.JS(eventsJSON),
 		Ride: Ride{
+			IsMoving:      true,
+			LastPing:      1,
 			Distance:      10,
 			Progress:      10,
 			ElevationGain: 10,
