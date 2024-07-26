@@ -2,10 +2,12 @@ package server
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/janschill/track-me/internal/db"
@@ -21,9 +23,6 @@ type EventStore struct {
 	db     *sql.DB
 	events []db.Event
 	cache  map[int]db.Event
-}
-
-func (s *httpServer) saveMessage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
@@ -76,6 +75,8 @@ func init() {
 }
 
 func HttpServer(addr string) *http.Server {
+	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
+
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
 		log.Fatal("DB_PATH environment variable is not set")
@@ -97,8 +98,14 @@ func HttpServer(addr string) *http.Server {
 	router.HandleFunc("/messages", server.handleMessages).Methods("POST")
 	router.HandleFunc("/garmin-outbound", server.handleGarminOutbound).Methods("POST")
 
+	nextRequestID := func() string {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	loggedRouter := Tracing(nextRequestID)(Logging(logger)(router))
+
 	return &http.Server{
-		Addr:    ":" + addr,
-		Handler: router,
+		Addr:     ":" + addr,
+		Handler:  loggedRouter,
+		ErrorLog: logger,
 	}
 }

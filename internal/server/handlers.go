@@ -13,6 +13,17 @@ import (
 	"github.com/janschill/track-me/internal/db"
 )
 
+type Ride struct {
+	Distance      int64
+	Progress      float64
+	ElevationGain int64
+	ElevationLoss int64
+	MovingTime    int64
+	ElapsedDays   int64
+	RemainingDays int64
+	CurrentDate   string
+}
+
 type GarminOutboundPayload struct {
 	Version string `json:"Version"`
 	Events  []struct {
@@ -112,28 +123,43 @@ type IndexPageData struct {
 	Events     []db.Event
 	LastEvent  db.Event
 	EventsJSON template.JS
+	Ride       Ride
+}
+
+func formatTimeStamp(ts int64) string {
+	t := time.Unix(ts, 0)
+	return t.Format("on 02 January at 15:04")
 }
 
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/index.html"))
+	funcMap := template.FuncMap{
+		"formatTimeStamp": formatTimeStamp,
+	}
+	tmpl := template.Must(template.New("layout.html").Funcs(funcMap).ParseFiles("templates/layout.html", "templates/index.html"))
 
 	messages, err := db.GetAllMessages(s.EventStore.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		log.Printf("Error retrieving messages: %v", err)
 		return
 	}
+	log.Printf("Retrieved %d messages", len(messages))
 
 	events, err := db.GetAllEvents(s.EventStore.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		log.Printf("Error retrieving events: %v", err)
 		return
 	}
+	log.Printf("Retrieved %d events", len(events))
 
 	lastEvent, err := db.GetLastEvent(s.EventStore.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		log.Printf("Error retrieving last event: %v", err)
 		return
 	}
+	log.Printf("Retrieved last event: %+v", lastEvent)
 
 	eventsJSON, err := json.Marshal(events)
 	if err != nil {
@@ -147,7 +173,20 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		Events:     events,
 		LastEvent:  lastEvent,
 		EventsJSON: template.JS(eventsJSON),
+		Ride: Ride{
+			Distance:      10,
+			Progress:      10,
+			ElevationGain: 10,
+			ElevationLoss: 10,
+			MovingTime:    10,
+			ElapsedDays:   10,
+			RemainingDays: 10,
+			CurrentDate:   "Hello",
+		},
 	}
 
-	tmpl.Execute(w, data)
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		log.Printf("Error executing template: %v", err)
+	}
 }

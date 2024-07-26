@@ -52,10 +52,10 @@ type Message struct {
 }
 
 func GetAllMessages(db *sql.DB) ([]Message, error) {
-	return nil, nil
+	// return nil, nil
 	rows, err := db.Query(`SELECT id, tripId, message, name, timeStamp, sentToGarmin FROM messages ORDER BY timeStamp`)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error querying messages: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -66,12 +66,12 @@ func GetAllMessages(db *sql.DB) ([]Message, error) {
 
 		err := rows.Scan(&m.ID, &m.TripID, &m.Message, &m.Name, &m.TimeStamp, &m.SentToGarmin)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("Error scanning message row: %v", err)
 		}
 		messages = append(messages, m)
 	}
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Printf("Error iterating message rows: %v", err)
 	}
 
 	return messages, nil
@@ -91,7 +91,7 @@ func GetLastEvent(db *sql.DB) (Event, error) {
 func GetAllEvents(db *sql.DB) ([]Event, error) {
 	rows, err := db.Query(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp FROM events ORDER BY timeStamp`)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error querying events: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -102,12 +102,12 @@ func GetAllEvents(db *sql.DB) ([]Event, error) {
 
 		err := rows.Scan(&e.ID, &e.Latitude, &e.Longitude, &e.Altitude, &e.Speed, &e.Course, &e.GpsFix, &e.TimeStamp)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("Error scanning event row: %v", err)
 		}
 		events = append(events, e)
 	}
 	if err := rows.Err(); err != nil {
-		log.Fatal(err)
+		log.Printf("Error iterating event rows: %v", err)
 	}
 
 	return events, nil
