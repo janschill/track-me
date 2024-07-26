@@ -1,8 +1,9 @@
 :root {
   --primary-color: #007bff;
-  --secondary-color: #6c757d;
+  --secondary-color: #efefef;
   --background-color: #f8f9fa;
   --text-color: #333;
+  --text-secondary-color: #505050;
   --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
   /* Component specific colors */
@@ -74,4 +75,38 @@ p {
   .messages-container { grid-area: 4 / 2 / 5 / 4; }
   .days-container { grid-area: 4 / 4 / 5 / 6; }
   .aside-container { grid-area: 1 / 1 / 5 / 2; }
+}
+
+.block {
+  background: var(--secondary-color);
+  flex: 1;
+  padding: 20px;
+  box-sizing: border-box;
+  max-width: 300px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.col {
+  width: 50%;
+}
+
+.row .label {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 5px;
+  color: var(--text-secondary-color);
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
 }
