@@ -52,9 +52,9 @@ func TestCalculateDistance(t *testing.T) {
 
 			events := convertPointsToEvents(data.Points)
 			result := CalculateDistance(events)
-			threshold := 1.5 // Allowable error margin in km
+			relativeThreshold := 0.05
 
-			if math.Abs(result-expectedDistance) > threshold {
+			if math.Abs(result-expectedDistance) > relativeThreshold*expectedDistance {
 				t.Errorf("CalculateDistance = %f; expected %f (file: %s)", result, expectedDistance, path)
 			}
 		}
