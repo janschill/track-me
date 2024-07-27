@@ -3,6 +3,7 @@ package db
 import (
 	"bufio"
 	"database/sql"
+	"encoding/json"
 	"log"
 	"os"
 	"strconv"
@@ -19,6 +20,13 @@ import (
 // 		log.Fatal("Failed to close database connection:", err)
 // 	}
 // }
+
+type Point struct {
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	TimeStamp int64   `json:"timestamp"`
+	EventID   int64   `json:eventID`
+}
 
 func InitializeDB(filePath string) (*sql.DB, error) {
 	Db, err := sql.Open("sqlite3", filePath)
@@ -44,27 +52,13 @@ func DestroyDB(filePath string) {
 	log.Println("Database file deleted successfully.")
 }
 
-// func ResetDB(filePath string) {
-// 	InitializeDB(filePath)
-// 	tables := []string{"events", "trips", "addresses"}
-// 	for _, table := range tables {
-// 		dropSQL := "DROP TABLE IF EXISTS " + table + ";"
-// 		_, err := Db.Exec(dropSQL)
-// 		if err != nil {
-// 			log.Fatalf("Failed to drop %s table: %v", table, err)
-// 		}
-// 		log.Printf("%s table dropped", table)
-// 	}
-
-// 	log.Println("Database reset successfully.")
-// 	closeDB()
-// }
-
 func CreateTables(filePath string) {
 	Db, err := sql.Open("sqlite3", filePath)
 	if err != nil {
 		return
 	}
+	defer Db.Close()
+
 	createTripTableSQL := `CREATE TABLE IF NOT EXISTS trips (
         "id" INTEGER PRIMARY KEY AUTOINCREMENT,
         "startTime" DATETIME,
@@ -100,8 +94,23 @@ func CreateTables(filePath string) {
     );`
 
 	createEventsCacheTableSQL := `CREATE TABLE IF NOT EXISTS events_cache (
-      date DATE PRIMARY KEY,
-			points_data TEXT NOT NULL
+	    id INTEGER PRIMARY KEY AUTOINCREMENT,
+			points TEXT NOT NULL
+	    tripId INTEGER NOT NULL,
+			averageSpeed REAL,
+			maxSpeed REAL,
+			minSpeed REAL,
+			totalDistanceInMeters INTEGER,
+			elevationGain INTEGER,
+			elevationLoss INTEGER,
+			averageAltitude REAL,
+			maxAltitude INTEGER,
+			minAltitude INTEGER,
+			movingTimeInSeconds INTEGER,
+			numberOfStops INTEGER,
+			totalStopTimeInSeconds INTEGER,
+	    date DATE NOT NULL,
+	    FOREIGN KEY(tripId) REFERENCES events(tripId)
     );`
 
 	createMessagesTableSQL := `CREATE TABLE IF NOT EXISTS messages (
@@ -140,9 +149,6 @@ func CreateTables(filePath string) {
 	}
 
 	log.Println("Tables created successfully.")
-	if err := Db.Close(); err != nil {
-		log.Fatal("Failed to close database connection:", err)
-	}
 }
 
 func Seed(filePath string) {
@@ -152,7 +158,7 @@ func Seed(filePath string) {
 	}
 	defer Db.Close()
 
-	file, err := os.Open("./data/route_points.txt")
+	file, err := os.Open("./data/gdmbr_points.txt")
 	if err != nil {
 		log.Fatal("Failed to open file:", err)
 	}
@@ -175,11 +181,11 @@ func Seed(filePath string) {
 		}
 		longitude, err := strconv.ParseFloat(longitudeStr, 64)
 		if err != nil {
-			log.Fatal("Failed to parse latitude:", err)
+			log.Fatal("Failed to parse longitude:", err)
 		}
 		elevation, err := strconv.ParseFloat(elevationStr, 64)
 		if err != nil {
-			log.Fatal("Failed to parse latitude:", err)
+			log.Fatal("Failed to parse elevation:", err)
 		}
 
 		currentDate := startDate.Add(time.Hour * 24 * time.Duration(rowCount/1500))
@@ -195,5 +201,60 @@ func Seed(filePath string) {
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal("Error reading file:", err)
+	}
+}
+
+func Aggregate(filePath string, day string) {
+	Db, err := sql.Open("sqlite3", filePath)
+	if err != nil {
+		log.Fatal("Failed to open database connection:", err)
+		return
+	}
+	defer Db.Close()
+
+	events, err := GetAllEvents(Db)
+	// events, err := GetAllEventsByDay(Db, day)
+	if err != nil {
+		log.Fatal("Failed to get events by day:", err)
+		return
+	}
+
+	log.Printf("Reducing events from %v", len(events))
+	reduced_events := Rdp(events, 0.0002) // roughly 1500 -> 321
+	log.Printf(" to %v", len(reduced_events))
+
+	distance := CalculateDistance(events)
+	log.Printf("Distance all events %v", distance)
+	distance = CalculateDistance(reduced_events)
+	log.Printf("Distance reduced events %v", distance)
+
+	reduced_events_json, err := json.Marshal(reduced_events)
+	if err != nil {
+		log.Fatal("Failed to marshal points data:", err)
+		return
+	}
+
+	return
+	d := Day{
+		Day:                    day,
+		Points:                 string(reduced_events_json),
+		TripID:                 reduced_events[0].TripID,
+		AverageSpeed:           0,
+		MaxSpeed:               0,
+		MinSpeed:               0,
+		TotalDistance:          0,
+		ElevationGain:          0,
+		ElevationLoss:          0,
+		AverageAltitude:        0,
+		MaxAltitude:            0,
+		MinAltitude:            0,
+		MovingTimeInSeconds:    0,
+		NumberOfStops:          0,
+		TotalStopTimeInSeconds: 0,
+	}
+
+	err = d.Save(Db)
+	if err != nil {
+		log.Fatal("Failed to save day")
 	}
 }

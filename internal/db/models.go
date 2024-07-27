@@ -31,6 +31,25 @@ type Event struct {
 	Speed       int
 }
 
+type Day struct {
+	ID                     int64
+	Day                    string
+	Points                 string
+	TripID                 int64
+	AverageSpeed           float64
+	MaxSpeed               float64
+	MinSpeed               float64
+	TotalDistance          float64
+	ElevationGain          int64
+	ElevationLoss          int64
+	AverageAltitude        float64
+	MaxAltitude            int64
+	MinAltitude            int64
+	MovingTimeInSeconds    int64
+	NumberOfStops          int64
+	TotalStopTimeInSeconds int64
+}
+
 type Address struct {
 	Address string
 }
@@ -86,6 +105,32 @@ func GetLastEvent(db *sql.DB) (Event, error) {
 		return Event{}, err
 	}
 	return e, nil
+}
+
+func GetAllEventsByDay(db *sql.DB, day string) ([]Event, error) {
+	query := "SELECT id, latitude, longitude, altitude, timeStamp FROM events WHERE DATE(timeStamp, 'unixepoch') = ?"
+	rows, err := db.Query(query, day)
+	if err != nil {
+		log.Printf("Error querying events: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []Event
+	for rows.Next() {
+		var e Event
+
+		err := rows.Scan(&e.ID, &e.Latitude, &e.Longitude, &e.Altitude, &e.TimeStamp)
+		if err != nil {
+			log.Printf("Error scanning event row: %v", err)
+		}
+		events = append(events, e)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("Error iterating event rows: %v", err)
+	}
+
+	return events, nil
 }
 
 func GetAllEvents(db *sql.DB) ([]Event, error) {
@@ -159,6 +204,25 @@ func (e *Event) Save(db *sql.DB) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	log.Printf("Saving new record to database")
+	return tx.Commit()
+}
+
+func (e *Day) Save(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal("Couldn't begin save transaction for Day")
+		return err
+	}
+	stmt, err := tx.Prepare(`INSERT INTO events_cache (points, tripId, averageSpeed, maxSpeed, minSpeed, totalDistance, elevationGain, elevationLoss, averageAltitude, maxAltitude, minAltitude, movingTimeInSeconds, numberOfStops, totalStopTimeInSeconds, day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(e.Points, e.TripID, e.AverageSpeed, e.MaxSpeed, e.MinSpeed, e.TotalDistance, e.ElevationGain, e.ElevationLoss, e.AverageAltitude, e.MaxAltitude, e.MinAltitude, e.MovingTimeInSeconds, e.NumberOfStops, e.TotalStopTimeInSeconds, e.Day)
+	if err != nil {
+		return err
 	}
 
 	log.Printf("Saving new record to database")
