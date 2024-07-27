@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	// "text/template"
 	"html/template"
 
 	"github.com/janschill/track-me/internal/db"
@@ -153,6 +152,7 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error retrieving events: %v", err)
 		return
 	}
+	events = db.Rdp(events, 0.0002) // roughly 1500 -> 321
 	log.Printf("Retrieved %d events", len(events))
 
 	lastEvent, err := db.GetLastEvent(s.EventStore.db)
