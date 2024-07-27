@@ -1,17 +1,20 @@
 package server
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/janschill/track-me/internal/db"
 	"github.com/joho/godotenv"
+	"golang.org/x/oauth2"
 )
 
 type httpServer struct {
@@ -24,6 +27,17 @@ type EventStore struct {
 	events []db.Event
 	cache  map[int]db.Event
 }
+
+var (
+	oauthConfig = &oauth2.Config{
+		ClientID:     "your-client-id",
+		ClientSecret: "your-client-secret",
+		Endpoint: oauth2.Endpoint{
+			TokenURL: "https://your-oauth-provider.com/token",
+		},
+	}
+	staticToken = "your-static-token"
+)
 
 func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
 	for _, pEvent := range payload.Events {
@@ -68,6 +82,33 @@ func fillCache() {
 
 }
 
+func authorize(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+		log.Printf("token: %v", token)
+		if token == staticToken {
+			log.Println("")
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		tokenSource := oauthConfig.TokenSource(context.TODO(), &oauth2.Token{AccessToken: token})
+		_, err := tokenSource.Token()
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -96,7 +137,7 @@ func HttpServer(addr string) *http.Server {
 	router.HandleFunc("/", server.handleIndex).Methods("GET")
 	router.HandleFunc("/events", server.handleEvents).Methods("GET")
 	router.HandleFunc("/messages", server.handleMessages).Methods("POST")
-	router.HandleFunc("/garmin-outbound", server.handleGarminOutbound).Methods("POST")
+	router.HandleFunc("/garmin-outbound", authorize(http.HandlerFunc(server.handleGarminOutbound))).Methods("POST")
 
 	nextRequestID := func() string {
 		return fmt.Sprintf("%d", time.Now().UnixNano())
