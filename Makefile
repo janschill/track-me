@@ -30,3 +30,8 @@ aggregate-db:
 	@echo "Aggregating data for day $(day)..."
 	go run cmd/db/main.go -dbpath=$(DB_PATH) -operation="aggregate" -day=$(day)
 
+import-gpx:
+	@echo "Importing GPX file to test folder..."
+	@filename=$(file); \
+	output="internal/db/test_data/$$(basename $$filename .gpx).json"; \
+	go run cmd/gpxparser/main.go $$filename $$output
