@@ -25,7 +25,7 @@ type Event struct {
 	Status      Status
 	Latitude    float64
 	Longitude   float64
-	Altitude    int
+	Altitude    int64
 	GpsFix      int
 	Course      int
 	Speed       int
@@ -216,12 +216,14 @@ func (e *Day) Save(db *sql.DB) error {
 		log.Fatal("Couldn't begin save transaction for Day")
 		return err
 	}
-	stmt, err := tx.Prepare(`INSERT INTO events_cache (points, tripId, averageSpeed, maxSpeed, minSpeed, totalDistance, elevationGain, elevationLoss, averageAltitude, maxAltitude, minAltitude, movingTimeInSeconds, numberOfStops, totalStopTimeInSeconds, day) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+	stmt, err := tx.Prepare(`INSERT INTO events_cache (points, tripId, averageSpeed, maxSpeed, minSpeed, totalDistanceInMeters, elevationGain, elevationLoss, averageAltitude, maxAltitude, minAltitude, movingTimeInSeconds, numberOfStops, totalStopTimeInSeconds, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
+		log.Fatal("Failed to prepare INSERT ", err)
 		return err
 	}
 	_, err = stmt.Exec(e.Points, e.TripID, e.AverageSpeed, e.MaxSpeed, e.MinSpeed, e.TotalDistance, e.ElevationGain, e.ElevationLoss, e.AverageAltitude, e.MaxAltitude, e.MinAltitude, e.MovingTimeInSeconds, e.NumberOfStops, e.TotalStopTimeInSeconds, e.Day)
 	if err != nil {
+		log.Fatal("Failed to exec INSERT ", err)
 		return err
 	}
 

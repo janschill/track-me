@@ -50,7 +50,7 @@ func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
 			Addresses:   make([]db.Address, len(pEvent.Addresses)),
 			Latitude:    pEvent.Point.Latitude,
 			Longitude:   pEvent.Point.Longitude,
-			Altitude:    pEvent.Point.Altitude,
+			Altitude:    int64(pEvent.Point.Altitude),
 			GpsFix:      pEvent.Point.GpsFix,
 			Course:      pEvent.Point.Course,
 			Speed:       pEvent.Point.Speed,

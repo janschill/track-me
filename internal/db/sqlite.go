@@ -14,11 +14,16 @@ type TestPoint struct {
 	Longitude float64 `json:"longitude"`
 	Latitude  float64 `json:"latitude"`
 	Altitude  float64 `json:"altitude"`
+	TimeStamp int64   `json:"timestamp"`
 }
 
 type GPXData struct {
-	Distance string      `json:"distance"`
-	Points   []TestPoint `json:"points"`
+	Distance      string      `json:"distance"`
+	MovingTime    string      `json:"movingTime"`
+	AverageSpeed  string      `json:"averageSpeed"`
+	ElevationGain string      `json:"elevationGain"`
+	ElevationLoss string      `json:"elevationLoss"`
+	Points        []TestPoint `json:"points"`
 }
 
 // var Db *sql.DB
@@ -98,7 +103,8 @@ func convertPointsToEvents(points []TestPoint) []Event {
 		events[i] = Event{
 			Longitude: point.Longitude,
 			Latitude:  point.Latitude,
-			Altitude:  int(point.Altitude),
+			Altitude:  int64(point.Altitude),
+			TimeStamp: point.TimeStamp,
 		}
 	}
 	return events
