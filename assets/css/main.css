@@ -74,7 +74,7 @@ p {
   .parent {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(5, 1fr);
+    grid-template-rows: auto;
     grid-column-gap: 20px;
     grid-row-gap: 20px;
   }
@@ -99,6 +99,10 @@ p {
   margin-bottom: 15px;
 }
 
+.row-flex {
+  justify-content: space-between;
+}
+
 .col {
   width: 50%;
 }
@@ -116,4 +120,26 @@ p {
 
 .mb-20 {
   margin-bottom: 20px;
+}
+
+.day {
+  background: var(--secondary-color);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.day__header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.day__title {
+  margin: 0;
+}
+
+.day__subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary-color);
+  margin-left: 10px;
 }
