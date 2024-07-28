@@ -2,17 +2,74 @@
 <div class="parent">
   <aside class="aside-container">
     <h1>The Great Divide Mountain Bike Route </h1>
-    <article>
+    <article class="mb-20">
       <p>For the next 30 days I will be riding my bicycle with two friends from Canada to Mexico.</p>
-      <p>You can see the planned route in blue and the completed part in red on the map. I am carrying a GPS tracker that will update the map with my live location and all other stats every 10 seconds. This GPS tracker can also send and receive messages, further down is a way of sending me messages either through space via satellites directly to the tracker or just simply through copper and fiber optic to this website.</p>
+      <p>You can see the planned route in blue and the completed part in red on the map. I am carrying a GPS tracker
+        that will update the map with my live location and all other stats every 10 minutes. This GPS tracker can also
+        send and receive messages, further down is a way of sending me messages either through space via satellites
+        directly to the tracker or just simply through copper and fiber optic to this website.</p>
     </article>
-    <section>
+    <section class="mb-20">
       <h2>Planned Route</h2>
-      <div></div>
+      <article class="block col-2">
+        <section class="row">
+          <div class="col">3,891 km<small class="label">Distance</small></div>
+        </section>
+        <section class="row">
+          <div class="col">44,009 m<small class="label">Elevation Gain</small></div>
+          <div class="col">43,413 m<small class="label">Elevation Loss</small></div>
+        </section>
+        <section class="row">
+          <div class="col">13.8 %<small class="label">Max Grade</small></div>
+          <div class="col">-27.4 %<small class="label">Min Grade</small></div>
+        </section>
+        <section class="row">
+          <div class="col">39 %<small class="label">Paved</small></div>
+          <div class="col">61 %<small class="label">Unpaved</small></div>
+        </section>
+        <section class="row">
+          <div class="col">30 days<small class="label">Estimated Duration</small></div>
+        </section>
+        <section class="row">
+          <div class="col">Sep 9th 2024<small class="label">Start Date</small></div>
+          <div class="col">Oct 9th 2024<small class="label">End Date</small></div>
+        </section>
+      </article>
     </section>
     <section>
       <h2>Actual Ride</h2>
-      <div></div>
+      <article class="block col-2">
+        <section class="row">
+          <div class="col">
+            {{ if .Ride.IsMoving }}
+              Yes
+            {{ else }}
+              No
+            {{ end }}
+            <small class="label">Currently Moving</small></div>
+          <div class="col"><div id="lastPing"></div><small class="label">Last Signal</small></div>
+        </section>
+        <section class="row">
+          <div class="col">{{ .Ride.Distance }} km<small class="label">Distance</small></div>
+          <div class="col">{{ .Ride.Progress }} %<small class="label">Progress</small></div>
+        </section>
+        <section class="row">
+          <div class="col">{{ .Ride.ElevationGain }} m<small class="label">Elevation Gain</small></div>
+          <div class="col">{{ .Ride.ElevationLoss }} m<small class="label">Elevation Loss</small></div>
+        </section>
+        <section class="row">
+          <div class="col">{{ .Ride.CurrentSpeed }} km/h<small class="label">Current Speed</small></div>
+          <div class="col">{{ .LastEvent.Altitude }} m<small class="label">Current Elevation</small></div>
+        </section>
+        <section class="row">
+          <div class="col">{{ .Ride.MovingTime }}<small class="label">Moving Time</small></div>
+          <div class="col">{{ .Ride.RestingTime }}<small class="label">Resting Time</small></div>
+        </section>
+        <section class="row">
+          <div class="col">{{ .Ride.ElapsedDays }} days<small class="label">Elapsed Days</small></div>
+          <div class="col">{{ .Ride.RemainingDays }} days<small class="label">Remaining Days</small></div>
+        </section>
+      </article>
     </section>
   </aside>
   <div class="map-container">
@@ -32,20 +89,34 @@
     <ul>
       {{ range .Messages }}
       <li class="message">
-        <p>{{ .Name }} wrote</p>
+        <p>{{ .Name }} wrote <small>{{ wroteOnTime .TimeStamp }}</small></p>
         <p>{{ .Message }}</p>
-        <p>{{ .Date }}</p>
-        {{ end }}
+        <p></p>
       </li>
+      {{ end }}
     </ul>
   </div>
   <div class="days-container">
-    <div>Test</div>
-    <div>Test</div>
-    <div>Test</div>
+    <h2>Days</h2>
+    <ol>
+    {{ range $i, $d := .Days }}
+      <li class="day">
+        <header class="day__header">
+          <h3 class="day__title">{{ addOne $i }}</h3>
+          <small class="day__subtitle">{{ onDay $d.TimeStamp }}</small>
+        </header>
+        <section class="row row-flex">
+          <div class="">{{ oneDecimal (inKm $d.TotalDistance) }} km<small class="label">Distance</small></div>
+          <div class="">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
+          <div class="">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
+          <div class="">{{ $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>
+          <div class="">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
+        </section>
+      </li>
+    {{ end }}
+    </ol>
   </div>
 </div>
 
 
 {{end}}
-

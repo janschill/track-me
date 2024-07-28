@@ -7,11 +7,24 @@ import (
 	"strconv"
 	"time"
 
-	// "text/template"
 	"html/template"
 
 	"github.com/janschill/track-me/internal/db"
 )
+
+type Ride struct {
+	IsMoving      bool
+	LastPing      int64
+	Distance      int64
+	Progress      float64
+	ElevationGain int64
+	ElevationLoss int64
+	MovingTime    string
+	RestingTime   string
+	ElapsedDays   int
+	RemainingDays int
+	CurrentSpeed  float64
+}
 
 type GarminOutboundPayload struct {
 	Version string `json:"Version"`
@@ -112,29 +125,63 @@ type IndexPageData struct {
 	Events     []db.Event
 	LastEvent  db.Event
 	EventsJSON template.JS
+	Ride       Ride
+	Days       []db.Day
+}
+
+func wroteOnTime(ts int64) string {
+	t := time.Unix(ts, 0)
+	return t.Format("on 02 January at 15:04")
+}
+
+func onDay(ts int64) string {
+	t := time.Unix(ts, 0)
+	return t.Format("02 January")
 }
 
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("templates/layout.html", "templates/index.html"))
+	funcMap := template.FuncMap{
+		"wroteOnTime": wroteOnTime,
+		"onDay": onDay,
+		"time": formatTime,
+		"oneDecimal": oneDecimal,
+		"inKm": inKm,
+		"addOne": func(i int) int { return i + 1 },
+	}
+	tmpl := template.Must(template.New("layout.html").Funcs(funcMap).ParseFiles("templates/layout.html", "templates/index.html"))
 
 	messages, err := db.GetAllMessages(s.EventStore.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		log.Printf("Error retrieving messages: %v", err)
 		return
 	}
+	log.Printf("Retrieved %d messages", len(messages))
 
 	events, err := db.GetAllEvents(s.EventStore.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		log.Printf("Error retrieving events: %v", err)
 		return
 	}
+	log.Printf("Retrieved %d events", len(events))
 
-	lastEvent, err := db.GetLastEvent(s.EventStore.db)
+	days, err := db.GetAllDays(s.EventStore.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		log.Printf("Error retrieving days: %v", err)
 		return
 	}
 
+	lastEvent := events[len(events)-1]
+	currentSpeed, isMoving := isMoving(events)
+	dist := distance(days, events)
+	gain, loss := elevation(days, events)
+	movingTime := movingTime(days, events)
+	movingTimeFormatted := formatTime(movingTime)
+	restingTimeFormatted := formatTime(restingTime(len(days), movingTime))
+
+	events = db.Rdp(events, 0.0002) // roughly 1500 -> 321
 	eventsJSON, err := json.Marshal(events)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
@@ -147,7 +194,24 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		Events:     events,
 		LastEvent:  lastEvent,
 		EventsJSON: template.JS(eventsJSON),
+		Ride: Ride{
+			IsMoving:      isMoving,
+			LastPing:      lastEvent.TimeStamp,
+			Distance:      dist,
+			Progress:      progress(dist),
+			CurrentSpeed:  currentSpeed,
+			ElevationGain: gain,
+			ElevationLoss: loss,
+			MovingTime:    movingTimeFormatted,
+			RestingTime:   restingTimeFormatted,
+			ElapsedDays:   len(days),
+			RemainingDays: 30 - len(days),
+		},
+		Days: days,
 	}
 
-	tmpl.Execute(w, data)
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		log.Printf("Error executing template: %v", err)
+	}
 }

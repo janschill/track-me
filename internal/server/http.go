@@ -1,15 +1,20 @@
 package server
 
 import (
+	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/janschill/track-me/internal/db"
 	"github.com/joho/godotenv"
+	"golang.org/x/oauth2"
 )
 
 type httpServer struct {
@@ -23,8 +28,16 @@ type EventStore struct {
 	cache  map[int]db.Event
 }
 
-func (s *httpServer) saveMessage(w http.ResponseWriter, r *http.Request) {
-}
+var (
+	oauthConfig = &oauth2.Config{
+		ClientID:     "your-client-id",
+		ClientSecret: "your-client-secret",
+		Endpoint: oauth2.Endpoint{
+			TokenURL: "https://your-oauth-provider.com/token",
+		},
+	}
+	staticToken = "your-static-token"
+)
 
 func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
 	for _, pEvent := range payload.Events {
@@ -37,7 +50,7 @@ func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
 			Addresses:   make([]db.Address, len(pEvent.Addresses)),
 			Latitude:    pEvent.Point.Latitude,
 			Longitude:   pEvent.Point.Longitude,
-			Altitude:    pEvent.Point.Altitude,
+			Altitude:    int64(pEvent.Point.Altitude),
 			GpsFix:      pEvent.Point.GpsFix,
 			Course:      pEvent.Point.Course,
 			Speed:       pEvent.Point.Speed,
@@ -69,6 +82,33 @@ func fillCache() {
 
 }
 
+func authorize(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+		log.Printf("token: %v", token)
+		if token == staticToken {
+			log.Println("")
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		tokenSource := oauthConfig.TokenSource(context.TODO(), &oauth2.Token{AccessToken: token})
+		_, err := tokenSource.Token()
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -76,6 +116,8 @@ func init() {
 }
 
 func HttpServer(addr string) *http.Server {
+	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
+
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
 		log.Fatal("DB_PATH environment variable is not set")
@@ -95,10 +137,16 @@ func HttpServer(addr string) *http.Server {
 	router.HandleFunc("/", server.handleIndex).Methods("GET")
 	router.HandleFunc("/events", server.handleEvents).Methods("GET")
 	router.HandleFunc("/messages", server.handleMessages).Methods("POST")
-	router.HandleFunc("/garmin-outbound", server.handleGarminOutbound).Methods("POST")
+	router.HandleFunc("/garmin-outbound", authorize(http.HandlerFunc(server.handleGarminOutbound))).Methods("POST")
+
+	nextRequestID := func() string {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	loggedRouter := Tracing(nextRequestID)(Logging(logger)(router))
 
 	return &http.Server{
-		Addr:    ":" + addr,
-		Handler: router,
+		Addr:     ":" + addr,
+		Handler:  loggedRouter,
+		ErrorLog: logger,
 	}
 }

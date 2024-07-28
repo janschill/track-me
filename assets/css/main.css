@@ -1,9 +1,10 @@
 :root {
-  --primary-color: #007bff;
-  --secondary-color: #6c757d;
+  --primary-color: #c43514;
+  --secondary-color: #efefef;
   --background-color: #f8f9fa;
-  --text-color: #333;
-  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --text-color: #4f4f4f;
+  --text-secondary-color: #505050;
+  --font-family: 'Helvetica', Tahoma, Geneva, Verdana, sans-serif;
 
   /* Component specific colors */
   --button-bg-color: var(--primary-color);
@@ -12,21 +13,28 @@
   --header-text-color: var(--background-color);
 }
 
+@font-face {
+  font-family: 'Neue Regrade';
+  src: url('/static/fonts/neue/Neue\ Regrade\ Bold.otf') format('opentype');
+}
+
 body {
   padding: 20px;
-  font-family: var(--font-family);
   color: var(--text-color);
+  font-family: var(--font-family);
   background-color: var(--background-color);
   font-size: 16px;
 }
 
 h1, h2, h3, h4, h5, h6 {
   color: var(--primary-color);
+  font-family: 'Neue Regrade', var(--font-family);
   margin-bottom: 10px;
+  font-size: 1.75rem;
 }
 
 h1 {
-  font-size: 1.115em;
+  font-size: 2rem;
 }
 
 p {
@@ -66,7 +74,7 @@ p {
   .parent {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(5, 1fr);
+    grid-template-rows: auto;
     grid-column-gap: 20px;
     grid-row-gap: 20px;
   }
@@ -74,4 +82,64 @@ p {
   .messages-container { grid-area: 4 / 2 / 5 / 4; }
   .days-container { grid-area: 4 / 4 / 5 / 6; }
   .aside-container { grid-area: 1 / 1 / 5 / 2; }
+}
+
+.block {
+  background: var(--secondary-color);
+  flex: 1;
+  padding: 20px;
+  box-sizing: border-box;
+  max-width: 300px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.row-flex {
+  justify-content: space-between;
+}
+
+.col {
+  width: 50%;
+}
+
+.row .label {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 5px;
+  color: var(--text-secondary-color);
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.day {
+  background: var(--secondary-color);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.day__header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.day__title {
+  margin: 0;
+}
+
+.day__subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary-color);
+  margin-left: 10px;
 }

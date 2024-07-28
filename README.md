@@ -14,7 +14,7 @@
 ## IPC Inbound & Outbound
 
 The Inbound services can be used to interact with the InReach device. For example messages can be sent, location can be requested etc.
-The Outbound services send periodically HTTP POST requests to your service.
+The Outbound services send periodically (10 minutes) HTTP POST requests to your service.
 
 <https://explore.garmin.com/IPCInbound/docs/>
 
