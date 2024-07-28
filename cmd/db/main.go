@@ -38,6 +38,8 @@ func main() {
 		db.DestroyDB(dbPath)
 	case "seed":
 		db.Seed(dbPath)
+	case "clear":
+		db.Clear(dbPath)
 	case "aggregate":
 		if day == "" {
 			fmt.Println("Usage: go run main.go -dbpath=<path-to-db> -operation=aggregate -day=<yyyy-mm-dd>")

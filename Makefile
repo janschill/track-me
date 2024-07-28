@@ -26,6 +26,10 @@ seed-db:
 	@echo "Seeding database..."
 	go run cmd/db/main.go -dbpath=$(DB_PATH) -operation="seed"
 
+clear-db:
+	@echo "Clearing database..."
+	go run cmd/db/main.go -dbpath=$(DB_PATH) -operation="clear"
+
 aggregate-db:
 	@echo "Aggregating data for day $(day)..."
 	go run cmd/db/main.go -dbpath=$(DB_PATH) -operation="aggregate" -day=$(day)
