@@ -33,7 +33,7 @@ type Event struct {
 
 type Day struct {
 	ID                     int64
-	Day                    string
+	TimeStamp              int64
 	Points                 string
 	TripID                 int64
 	AverageSpeed           float64
@@ -96,7 +96,7 @@ func GetAllMessages(db *sql.DB) ([]Message, error) {
 }
 
 func GetAllDays(db *sql.DB) ([]Day, error) {
-	rows, err := db.Query(`SELECT * FROM events_cache ORDER BY date`)
+	rows, err := db.Query(`SELECT * FROM events_cache ORDER BY timeStamp`)
 	if err != nil {
 		log.Printf("Error querying days: %v", err)
 		return nil, err
@@ -107,7 +107,7 @@ func GetAllDays(db *sql.DB) ([]Day, error) {
 	for rows.Next() {
 		var d Day
 
-		err := rows.Scan(&d.ID, &d.Points, &d.TripID, &d.AverageSpeed, &d.MaxSpeed, &d.MinSpeed, &d.TotalDistance, &d.ElevationGain, &d.ElevationLoss, &d.AverageAltitude, &d.MaxAltitude, &d.MinAltitude, &d.MovingTimeInSeconds, &d.NumberOfStops, &d.TotalStopTimeInSeconds, &d.Day)
+		err := rows.Scan(&d.ID, &d.Points, &d.TripID, &d.AverageSpeed, &d.MaxSpeed, &d.MinSpeed, &d.TotalDistance, &d.ElevationGain, &d.ElevationLoss, &d.AverageAltitude, &d.MaxAltitude, &d.MinAltitude, &d.MovingTimeInSeconds, &d.NumberOfStops, &d.TotalStopTimeInSeconds, &d.TimeStamp)
 		if err != nil {
 			log.Printf("Error scanning day row: %v", err)
 		}
@@ -240,12 +240,12 @@ func (e *Day) Save(db *sql.DB) error {
 		log.Fatal("Couldn't begin save transaction for Day")
 		return err
 	}
-	stmt, err := tx.Prepare(`INSERT INTO events_cache (points, tripId, averageSpeed, maxSpeed, minSpeed, totalDistanceInMeters, elevationGain, elevationLoss, averageAltitude, maxAltitude, minAltitude, movingTimeInSeconds, numberOfStops, totalStopTimeInSeconds, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+	stmt, err := tx.Prepare(`INSERT INTO events_cache (points, tripId, averageSpeed, maxSpeed, minSpeed, totalDistanceInMeters, elevationGain, elevationLoss, averageAltitude, maxAltitude, minAltitude, movingTimeInSeconds, numberOfStops, totalStopTimeInSeconds, timeStamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		log.Fatal("Failed to prepare INSERT ", err)
 		return err
 	}
-	_, err = stmt.Exec(e.Points, e.TripID, e.AverageSpeed, e.MaxSpeed, e.MinSpeed, e.TotalDistance, e.ElevationGain, e.ElevationLoss, e.AverageAltitude, e.MaxAltitude, e.MinAltitude, e.MovingTimeInSeconds, e.NumberOfStops, e.TotalStopTimeInSeconds, e.Day)
+	_, err = stmt.Exec(e.Points, e.TripID, e.AverageSpeed, e.MaxSpeed, e.MinSpeed, e.TotalDistance, e.ElevationGain, e.ElevationLoss, e.AverageAltitude, e.MaxAltitude, e.MinAltitude, e.MovingTimeInSeconds, e.NumberOfStops, e.TotalStopTimeInSeconds, e.TimeStamp)
 	if err != nil {
 		log.Fatal("Failed to exec INSERT ", err)
 		return err

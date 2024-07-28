@@ -208,7 +208,7 @@ func Aggregate(filePath string, day string) {
 	}
 
 	d := Day{
-		Day:                    day,
+		TimeStamp:              events[0].TimeStamp,
 		Points:                 string(reduced_events_json),
 		TripID:                 reduced_events[0].TripID,
 		AverageSpeed:           averageSpeed,

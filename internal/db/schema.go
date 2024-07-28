@@ -69,7 +69,7 @@ var schema = Schema{
 			movingTimeInSeconds INTEGER,
 			numberOfStops INTEGER,
 			totalStopTimeInSeconds INTEGER,
-			date DATE NOT NULL
+			timeStamp INTEGER NOT NULL
 			);`,
 		},
 		{
