@@ -7,6 +7,19 @@ import (
 	"github.com/janschill/track-me/internal/db"
 )
 
+func oneDecimal(num float64) float64 {
+	numStr := fmt.Sprintf("%.1f", num)
+	formattedSpeed, err := strconv.ParseFloat(numStr, 64)
+	if err != nil {
+		return 0
+	}
+	return formattedSpeed
+}
+
+func inKm(distance float64) float64 {
+	return distance / 1000
+}
+
 func isMoving(events []db.Event) (float64, bool) {
 	eventCount := len(events)
 	if eventCount < 2 {
@@ -16,12 +29,8 @@ func isMoving(events []db.Event) (float64, bool) {
 	secondToLastEvent := events[eventCount-2]
 	lastEvent := events[eventCount-1]
 	speed := db.CalculateSpeed(secondToLastEvent, lastEvent) * 3.6 * 1000
-	speedStr := fmt.Sprintf("%.1f", speed)
-	formattedSpeed, err := strconv.ParseFloat(speedStr, 64)
-	if err != nil {
-		return 0, false
-	}
-	return formattedSpeed, lastEvent.Latitude != secondToLastEvent.Latitude || lastEvent.Longitude != secondToLastEvent.Longitude
+
+	return oneDecimal(speed), lastEvent.Latitude != secondToLastEvent.Latitude || lastEvent.Longitude != secondToLastEvent.Longitude
 }
 
 func distance(days []db.Day, events []db.Event) int64 {
@@ -35,12 +44,8 @@ func distance(days []db.Day, events []db.Event) int64 {
 func progress(distanceSoFar int64) float64 {
 	distanceInTotal := 3891.0
 	percentage := float64(distanceSoFar) / distanceInTotal * 100
-	percentageStr := fmt.Sprintf("%.1f", percentage)
-	percentageFloat, err := strconv.ParseFloat(percentageStr, 64)
-	if err != nil {
-		return 0.0
-	}
-	return percentageFloat
+
+	return oneDecimal(percentage)
 }
 
 func elevation(days []db.Day, events []db.Event) (int64, int64) {

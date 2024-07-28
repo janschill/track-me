@@ -89,7 +89,7 @@
     <ul>
       {{ range .Messages }}
       <li class="message">
-        <p>{{ .Name }} wrote <small>{{ formatTimeStamp .TimeStamp }}</small></p>
+        <p>{{ .Name }} wrote <small>{{ wroteOnTime .TimeStamp }}</small></p>
         <p>{{ .Message }}</p>
         <p></p>
       </li>
@@ -99,9 +99,19 @@
   <div class="days-container">
     <h2>Days</h2>
     <ol>
-    {{ range .Days }}
-      <li class="message">
-        <p>{{ .Day }}</p>
+    {{ range $i, $d := .Days }}
+      <li class="day">
+        <header class="day__header">
+          <h3 class="day__title">{{ addOne $i }}</h3>
+          <small class="day__subtitle">{{ onDay $d.TimeStamp }}</small>
+        </header>
+        <section class="row row-flex">
+          <div class="">{{ oneDecimal (inKm $d.TotalDistance) }} km<small class="label">Distance</small></div>
+          <div class="">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
+          <div class="">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
+          <div class="">{{ $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>
+          <div class="">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
+        </section>
       </li>
     {{ end }}
     </ol>

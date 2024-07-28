@@ -129,14 +129,24 @@ type IndexPageData struct {
 	Days       []db.Day
 }
 
-func formatTimeStamp(ts int64) string {
+func wroteOnTime(ts int64) string {
 	t := time.Unix(ts, 0)
 	return t.Format("on 02 January at 15:04")
 }
 
+func onDay(ts int64) string {
+	t := time.Unix(ts, 0)
+	return t.Format("02 January")
+}
+
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 	funcMap := template.FuncMap{
-		"formatTimeStamp": formatTimeStamp,
+		"wroteOnTime": wroteOnTime,
+		"onDay": onDay,
+		"time": formatTime,
+		"oneDecimal": oneDecimal,
+		"inKm": inKm,
+		"addOne": func(i int) int { return i + 1 },
 	}
 	tmpl := template.Must(template.New("layout.html").Funcs(funcMap).ParseFiles("templates/layout.html", "templates/index.html"))
 
