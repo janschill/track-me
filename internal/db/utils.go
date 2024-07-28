@@ -72,7 +72,7 @@ func Rdp(events []Event, epsilon float64) []Event {
 
 // m/s
 // to get km/h: * 3.6
-func calculateSpeed(event1, event2 Event) float64 {
+func CalculateSpeed(event1, event2 Event) float64 {
 	distance := haversine(event1.Latitude, event1.Longitude, event2.Latitude, event2.Longitude)
 	timeDiff := time.Unix(event2.TimeStamp, 0).Sub(time.Unix(event1.TimeStamp, 0)).Seconds()
 	if timeDiff == 0 {
@@ -88,7 +88,7 @@ func CalculateMovingTimeAndAverageSpeed(events []Event, speedThreshold float64) 
 	var totalSeconds float64
 
 	for i := 1; i < len(events); i++ {
-		speed := calculateSpeed(events[i-1], events[i])
+		speed := CalculateSpeed(events[i-1], events[i])
 		if speed > speedThreshold {
 			totalKms += haversine(events[i-1].Latitude, events[i-1].Longitude, events[i].Latitude, events[i].Longitude)
 			totalSeconds += time.Unix(events[i].TimeStamp, 0).Sub(time.Unix(events[i-1].TimeStamp, 0)).Seconds()

@@ -19,10 +19,11 @@ type Ride struct {
 	Progress      float64
 	ElevationGain int64
 	ElevationLoss int64
-	MovingTime    int64
-	ElapsedDays   int64
-	RemainingDays int64
-	CurrentDate   string
+	MovingTime    string
+	RestingTime   string
+	ElapsedDays   int
+	RemainingDays int
+	CurrentSpeed  float64
 }
 
 type GarminOutboundPayload struct {
@@ -153,28 +154,28 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error retrieving events: %v", err)
 		return
 	}
-	events = db.Rdp(events, 0.0002) // roughly 1500 -> 321
 	log.Printf("Retrieved %d events", len(events))
-
-	lastEvent, err := db.GetLastEvent(s.EventStore.db)
-	if err != nil {
-		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
-		log.Printf("Error retrieving last event: %v", err)
-		return
-	}
-	log.Printf("Retrieved last event: %+v", lastEvent)
-
-	eventsJSON, err := json.Marshal(events)
-	if err != nil {
-		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
-		log.Printf("Error marshalling events: %v", err)
-		return
-	}
 
 	days, err := db.GetAllDays(s.EventStore.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
 		log.Printf("Error retrieving days: %v", err)
+		return
+	}
+
+	lastEvent := events[len(events)-1]
+	currentSpeed, isMoving := isMoving(events)
+	dist := distance(days, events)
+	gain, loss := elevation(days, events)
+	movingTime := movingTime(days, events)
+	movingTimeFormatted := formatTime(movingTime)
+	restingTimeFormatted := formatTime(restingTime(len(days), movingTime))
+
+	events = db.Rdp(events, 0.0002) // roughly 1500 -> 321
+	eventsJSON, err := json.Marshal(events)
+	if err != nil {
+		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		log.Printf("Error marshalling events: %v", err)
 		return
 	}
 
@@ -184,16 +185,17 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		LastEvent:  lastEvent,
 		EventsJSON: template.JS(eventsJSON),
 		Ride: Ride{
-			IsMoving:      true,
-			LastPing:      1,
-			Distance:      10,
-			Progress:      10,
-			ElevationGain: 10,
-			ElevationLoss: 10,
-			MovingTime:    10,
-			ElapsedDays:   10,
-			RemainingDays: 10,
-			CurrentDate:   "Hello",
+			IsMoving:      isMoving,
+			LastPing:      lastEvent.TimeStamp,
+			Distance:      dist,
+			Progress:      progress(dist),
+			CurrentSpeed:  currentSpeed,
+			ElevationGain: gain,
+			ElevationLoss: loss,
+			MovingTime:    movingTimeFormatted,
+			RestingTime:   restingTimeFormatted,
+			ElapsedDays:   len(days),
+			RemainingDays: 30 - len(days),
 		},
 		Days: days,
 	}

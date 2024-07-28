@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+function setUpMap() {
   const latitude = serverData.LastEvent.Latitude
   const longitude = serverData.LastEvent.Longitude
   // Central latitude and longitude for the USA
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // const events = serverData.EventsJSON
   const events = serverData.EventsJSON
   const pathCoordinates = events.map(event => [event.Latitude, event.Longitude]);
-  const path = L.polyline(pathCoordinates, { color: 'red' }).addTo(map).bringToFront();
+  const path = L.polyline(pathCoordinates, { color: '#c43514' }).addTo(map).bringToFront();
 
   // Load full planned route
   const url = '/static/gpx/Great_Divide_2024.gpx'
@@ -45,4 +45,26 @@ document.addEventListener('DOMContentLoaded', function () {
     popupAnchor: [1, -34],
   });
   L.marker([latitude, longitude], { icon: customIcon }).addTo(map).openPopup();
+}
+
+function calculateLastPing() {
+  const lastPingUnix = serverData.LastEvent.TimeStamp;
+  const lastPingDate = new Date(lastPingUnix * 1000);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - lastPingDate) / 1000);
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  const lastPingElement = document.querySelector('#lastPing');
+  if (diffInHours > 0) {
+    lastPingElement.textContent = `${diffInHours} hour(s) ago`;
+  } else if (diffInMinutes > 0) {
+    lastPingElement.textContent = `${diffInMinutes} minute(s) ago`;
+  } else {
+    lastPingElement.textContent = `${diffInSeconds} second(s) ago`;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  setUpMap()
+  calculateLastPing()
 });

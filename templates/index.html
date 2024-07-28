@@ -5,7 +5,7 @@
     <article class="mb-20">
       <p>For the next 30 days I will be riding my bicycle with two friends from Canada to Mexico.</p>
       <p>You can see the planned route in blue and the completed part in red on the map. I am carrying a GPS tracker
-        that will update the map with my live location and all other stats every 10 seconds. This GPS tracker can also
+        that will update the map with my live location and all other stats every 10 minutes. This GPS tracker can also
         send and receive messages, further down is a way of sending me messages either through space via satellites
         directly to the tracker or just simply through copper and fiber optic to this website.</p>
     </article>
@@ -13,7 +13,7 @@
       <h2>Planned Route</h2>
       <article class="block col-2">
         <section class="row">
-          <div class="col">3,987 km<small class="label">Distance</small></div>
+          <div class="col">3,891 km<small class="label">Distance</small></div>
         </section>
         <section class="row">
           <div class="col">44,009 m<small class="label">Elevation Gain</small></div>
@@ -47,7 +47,7 @@
               No
             {{ end }}
             <small class="label">Currently Moving</small></div>
-          <div class="col">{{ .Ride.LastPing }} minute(s) ago<small class="label">Last Signal</small></div>
+          <div class="col"><div id="lastPing"></div><small class="label">Last Signal</small></div>
         </section>
         <section class="row">
           <div class="col">{{ .Ride.Distance }} km<small class="label">Distance</small></div>
@@ -58,14 +58,16 @@
           <div class="col">{{ .Ride.ElevationLoss }} m<small class="label">Elevation Loss</small></div>
         </section>
         <section class="row">
+          <div class="col">{{ .Ride.CurrentSpeed }} km/h<small class="label">Current Speed</small></div>
+          <div class="col">{{ .LastEvent.Altitude }} m<small class="label">Current Elevation</small></div>
+        </section>
+        <section class="row">
           <div class="col">{{ .Ride.MovingTime }}<small class="label">Moving Time</small></div>
+          <div class="col">{{ .Ride.RestingTime }}<small class="label">Resting Time</small></div>
         </section>
         <section class="row">
           <div class="col">{{ .Ride.ElapsedDays }} days<small class="label">Elapsed Days</small></div>
           <div class="col">{{ .Ride.RemainingDays }} days<small class="label">Remaining Days</small></div>
-        </section>
-        <section class="row">
-          <div class="col">{{ .Ride.CurrentDate}} <small class="label">Current Date</small></div>
         </section>
       </article>
     </section>
@@ -95,6 +97,7 @@
     </ul>
   </div>
   <div class="days-container">
+    <h2>Days</h2>
     <ol>
     {{ range .Days }}
       <li class="message">

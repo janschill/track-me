@@ -76,10 +76,16 @@ func main() {
 
 	var points []Point
 	for _, trkPt := range gpx.Trk.TrkSeg.TrkPts {
-		timestamp, err := time.Parse(time.RFC3339, trkPt.Time)
-		if err != nil {
-			fmt.Printf("Error parsing time: %v\n", err)
-			return
+		var timestamp time.Time
+		if trkPt.Time != "" {
+			parsedTimestamp, err := time.Parse(time.RFC3339, trkPt.Time)
+			if err != nil {
+				fmt.Printf("Error parsing time: %v\n", err)
+				return
+			} else {
+				timestamp = parsedTimestamp
+			}
+
 		}
 		points = append(points, Point{
 			Longitude: trkPt.Lon,
