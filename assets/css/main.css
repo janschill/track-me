@@ -1,10 +1,10 @@
 :root {
-  --primary-color: #007bff;
+  --primary-color: #c43514;
   --secondary-color: #efefef;
   --background-color: #f8f9fa;
-  --text-color: #333;
+  --text-color: #4f4f4f;
   --text-secondary-color: #505050;
-  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-family: 'Helvetica', Tahoma, Geneva, Verdana, sans-serif;
 
   /* Component specific colors */
   --button-bg-color: var(--primary-color);
@@ -13,21 +13,28 @@
   --header-text-color: var(--background-color);
 }
 
+@font-face {
+  font-family: 'Neue Regrade';
+  src: url('/static/fonts/neue/Neue\ Regrade\ Bold.otf') format('opentype');
+}
+
 body {
   padding: 20px;
-  font-family: var(--font-family);
   color: var(--text-color);
+  font-family: var(--font-family);
   background-color: var(--background-color);
   font-size: 16px;
 }
 
 h1, h2, h3, h4, h5, h6 {
   color: var(--primary-color);
+  font-family: 'Neue Regrade', var(--font-family);
   margin-bottom: 10px;
+  font-size: 1.75rem;
 }
 
 h1 {
-  font-size: 1.115em;
+  font-size: 2rem;
 }
 
 p {
