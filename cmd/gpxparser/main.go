@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 )
 
 type GPX struct {
@@ -22,20 +23,26 @@ type TrkSeg struct {
 }
 
 type TrkPt struct {
-	Lat float64 `xml:"lat,attr"`
-	Lon float64 `xml:"lon,attr"`
-	Ele float64 `xml:"ele"`
+	Lat  float64 `xml:"lat,attr"`
+	Lon  float64 `xml:"lon,attr"`
+	Ele  float64 `xml:"ele"`
+	Time string  `xml:"time"`
 }
 
 type Point struct {
 	Longitude float64 `json:"longitude"`
 	Latitude  float64 `json:"latitude"`
 	Altitude  float64 `json:"altitude"`
+	TimeStamp int64   `json:"timestamp"`
 }
 
 type Output struct {
-	Distance string  `json:"distance"`
-	Points   []Point `json:"points"`
+	Distance      string  `json:"distance"`
+	MovingTime    string  `json:"movingTime"`
+	AverageSpeed  string  `json:"averageSpeed"`
+	ElevationGain string  `json:"elevationGain"`
+	ElevationLoss string  `json:"elevationLoss"`
+	Points        []Point `json:"points"`
 }
 
 func main() {
@@ -69,16 +76,26 @@ func main() {
 
 	var points []Point
 	for _, trkPt := range gpx.Trk.TrkSeg.TrkPts {
+		timestamp, err := time.Parse(time.RFC3339, trkPt.Time)
+		if err != nil {
+			fmt.Printf("Error parsing time: %v\n", err)
+			return
+		}
 		points = append(points, Point{
 			Longitude: trkPt.Lon,
 			Latitude:  trkPt.Lat,
 			Altitude:  trkPt.Ele,
+			TimeStamp: timestamp.Unix(),
 		})
 	}
 
 	output := Output{
-		Distance: "TODO",
-		Points:   points,
+		Distance:      "TODO",
+		MovingTime:    "TODO",
+		AverageSpeed:  "TODO",
+		ElevationGain: "TODO",
+		ElevationLoss: "TODO",
+		Points:        points,
 	}
 
 	jsonData, err := json.MarshalIndent(output, "", "  ")
