@@ -136,20 +136,23 @@ func Seed(filePath string) {
 		log.Fatalf("Failed to read GPX data from file %s: %v", path, err)
 	}
 	startDate := time.Date(2024, time.September, 8, 0, 0, 0, 0, time.UTC)
-	currentDate := startDate.Add(time.Hour * 24 * time.Duration(len(data.Points)/1500))
-	timeStamp := currentDate.Unix()
-	// every 1500 entrys increment day
+	totalPoints := len(data.Points)
+	totalDuration := time.Hour * 24 * time.Duration(totalPoints/1500) // total duration in days
+	timeIncrement := totalDuration / time.Duration(totalPoints)       // time increment per point
+	currentTime := startDate
 	rowCount := 0
+	// every 1500 entrys increment day
 	for _, point := range data.Points {
+		timeStamp := currentTime.Unix()
 		_, err = Db.Exec("INSERT INTO events(tripId, imei, messageCode, timeStamp, latitude, longitude, altitude, gpsFix, course, speed, autonomous, lowBattery, intervalChange, resetDetected) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 			1, "fake-imei", 0, timeStamp, point.Latitude, point.Longitude, int(point.Altitude), 0, 0, 0, 0, 0, 0, 0)
 		if err != nil {
 			log.Fatal("Failed to insert into events table:", err)
 		}
 
+		currentTime = currentTime.Add(timeIncrement)
 		rowCount++
 	}
-
 }
 
 func Aggregate(filePath string, day string) {
@@ -160,21 +163,43 @@ func Aggregate(filePath string, day string) {
 	}
 	defer Db.Close()
 
-	events, err := GetAllEvents(Db)
-	// events, err := GetAllEventsByDay(Db, day)
+	// events, err := GetAllEvents(Db)
+	events, err := GetAllEventsByDay(Db, day)
 	if err != nil {
 		log.Fatal("Failed to get events by day:", err)
 		return
 	}
+	movingTime, averageSpeed := CalculateMovingTimeAndAverageSpeed(events, 0.001)
+	gain, loss := CalculateElevationGainAndLoss(events)
+	// maxSpeed := CalculateMaxSpeed(events)
+	averageAltitude, maxAltitude, minAltitude := CalculateAltitudes(events)
+	// stops, stopTime := CalculateStops(events)
+
+	// log.Printf("Moving time: %v", movingTime)
+	// log.Printf("Average Speed: %v", averageSpeed)
+	// log.Printf("Gain: %v", gain)
+	// log.Printf("Loss: %v", loss)
+	// log.Printf("MaxSpeed: %v", maxSpeed)
+	// log.Printf("Average Alt: %v", averageAltitude)
+	// log.Printf("Max Alt: %v", maxAltitude)
+	// log.Printf("Min Alt: %v", minAltitude)
+	// log.Printf("Stops: %v", stops)
+	// log.Printf("Stop time: %v", stopTime)
 
 	log.Printf("Reducing events from %v", len(events))
 	reduced_events := Rdp(events, 0.0002) // roughly 1500 -> 321
-	log.Printf(" to %v", len(reduced_events))
+	log.Printf("Number of reduced_events after Rdp %v", len(reduced_events))
 
-	distance := CalculateDistance(events)
-	log.Printf("Distance all events %v", distance)
-	distance = CalculateDistance(reduced_events)
-	log.Printf("Distance reduced events %v", distance)
+	// distance := CalculateDistance(events)
+	// log.Printf("Distance before aggregate events: %v", distance)
+	// log.Printf("Reducing events from %v", len(events))
+	// reduced_events := Rdp(copyEvents(events), 0.0002) // roughly 1500 -> 321
+	// log.Printf("Number of reduced_events after Rdp %v", len(reduced_events))
+	// log.Printf("Number of events after Rdp %v", len(events))
+	// distance = CalculateDistance(reduced_events)
+	// log.Printf("Distance on aggregated events %v", distance)
+	// distance = CalculateDistance(events)
+	// log.Printf("Distance all after aggregate: %v", distance)
 
 	reduced_events_json, err := json.Marshal(reduced_events)
 	if err != nil {
@@ -182,21 +207,20 @@ func Aggregate(filePath string, day string) {
 		return
 	}
 
-	return
 	d := Day{
 		Day:                    day,
 		Points:                 string(reduced_events_json),
 		TripID:                 reduced_events[0].TripID,
-		AverageSpeed:           0,
+		AverageSpeed:           averageSpeed,
 		MaxSpeed:               0,
 		MinSpeed:               0,
-		TotalDistance:          0,
-		ElevationGain:          0,
-		ElevationLoss:          0,
-		AverageAltitude:        0,
-		MaxAltitude:            0,
-		MinAltitude:            0,
-		MovingTimeInSeconds:    0,
+		TotalDistance:          CalculateDistance(reduced_events),
+		ElevationGain:          gain,
+		ElevationLoss:          loss,
+		AverageAltitude:        float64(averageAltitude),
+		MaxAltitude:            maxAltitude,
+		MinAltitude:            minAltitude,
+		MovingTimeInSeconds:    int64(movingTime),
 		NumberOfStops:          0,
 		TotalStopTimeInSeconds: 0,
 	}
