@@ -125,6 +125,7 @@ type IndexPageData struct {
 	LastEvent  db.Event
 	EventsJSON template.JS
 	Ride       Ride
+	Days       []db.Day
 }
 
 func formatTimeStamp(ts int64) string {
@@ -170,6 +171,13 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	days, err := db.GetAllDays(s.EventStore.db)
+	if err != nil {
+		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
+		log.Printf("Error retrieving days: %v", err)
+		return
+	}
+
 	data := IndexPageData{
 		Messages:   messages,
 		Events:     events,
@@ -187,6 +195,7 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 			RemainingDays: 10,
 			CurrentDate:   "Hello",
 		},
+		Days: days,
 	}
 
 	err = tmpl.Execute(w, data)

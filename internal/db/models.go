@@ -71,7 +71,6 @@ type Message struct {
 }
 
 func GetAllMessages(db *sql.DB) ([]Message, error) {
-	// return nil, nil
 	rows, err := db.Query(`SELECT id, tripId, message, name, timeStamp, sentToGarmin FROM messages ORDER BY timeStamp`)
 	if err != nil {
 		log.Printf("Error querying messages: %v", err)
@@ -94,6 +93,31 @@ func GetAllMessages(db *sql.DB) ([]Message, error) {
 	}
 
 	return messages, nil
+}
+
+func GetAllDays(db *sql.DB) ([]Day, error) {
+	rows, err := db.Query(`SELECT * FROM events_cache ORDER BY date`)
+	if err != nil {
+		log.Printf("Error querying days: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var days []Day
+	for rows.Next() {
+		var d Day
+
+		err := rows.Scan(&d.ID, &d.Points, &d.TripID, &d.AverageSpeed, &d.MaxSpeed, &d.MinSpeed, &d.TotalDistance, &d.ElevationGain, &d.ElevationLoss, &d.AverageAltitude, &d.MaxAltitude, &d.MinAltitude, &d.MovingTimeInSeconds, &d.NumberOfStops, &d.TotalStopTimeInSeconds, &d.Day)
+		if err != nil {
+			log.Printf("Error scanning day row: %v", err)
+		}
+		days = append(days, d)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("Error iterating day rows: %v", err)
+	}
+
+	return days, nil
 }
 
 func GetLastEvent(db *sql.DB) (Event, error) {

@@ -95,9 +95,13 @@
     </ul>
   </div>
   <div class="days-container">
-    <div>Test</div>
-    <div>Test</div>
-    <div>Test</div>
+    <ol>
+    {{ range .Days }}
+      <li class="message">
+        <p>{{ .Day }}</p>
+      </li>
+    {{ end }}
+    </ol>
   </div>
 </div>
 
