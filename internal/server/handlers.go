@@ -53,6 +53,40 @@ type GarminOutboundPayload struct {
 	} `json:"Events"`
 }
 
+func (c *Env) prepareAndSave(payload GarminOutboundPayload) error {
+	for _, pEvent := range payload.Events {
+		event := db.Event{
+			TripID:      1,
+			Imei:        pEvent.Imei,
+			MessageCode: pEvent.MessageCode,
+			FreeText:    pEvent.FreeText,
+			TimeStamp:   pEvent.TimeStamp,
+			Addresses:   make([]db.Address, len(pEvent.Addresses)),
+			Latitude:    pEvent.Point.Latitude,
+			Longitude:   pEvent.Point.Longitude,
+			Altitude:    int64(pEvent.Point.Altitude),
+			GpsFix:      pEvent.Point.GpsFix,
+			Course:      pEvent.Point.Course,
+			Speed:       pEvent.Point.Speed,
+			Status: db.Status{
+				Autonomous:     pEvent.Status.Autonomous,
+				LowBattery:     pEvent.Status.LowBattery,
+				IntervalChange: pEvent.Status.IntervalChange,
+				ResetDetected:  pEvent.Status.ResetDetected,
+			},
+		}
+
+		for i, addr := range pEvent.Addresses {
+			event.Addresses[i] = db.Address{Address: addr.Address}
+		}
+
+		if err := event.Save(c.db); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method is not supported.", http.StatusMethodNotAllowed)

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gorilla/mux"
 	"github.com/janschill/track-me/internal/db"
 	"github.com/joho/godotenv"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"golang.org/x/oauth2"
 )
 
@@ -36,40 +36,6 @@ var (
 	}
 	staticToken = "your-static-token"
 )
-
-func (c *Env) prepareAndSave(payload GarminOutboundPayload) error {
-	for _, pEvent := range payload.Events {
-		event := db.Event{
-			TripID:      1,
-			Imei:        pEvent.Imei,
-			MessageCode: pEvent.MessageCode,
-			FreeText:    pEvent.FreeText,
-			TimeStamp:   pEvent.TimeStamp,
-			Addresses:   make([]db.Address, len(pEvent.Addresses)),
-			Latitude:    pEvent.Point.Latitude,
-			Longitude:   pEvent.Point.Longitude,
-			Altitude:    int64(pEvent.Point.Altitude),
-			GpsFix:      pEvent.Point.GpsFix,
-			Course:      pEvent.Point.Course,
-			Speed:       pEvent.Point.Speed,
-			Status: db.Status{
-				Autonomous:     pEvent.Status.Autonomous,
-				LowBattery:     pEvent.Status.LowBattery,
-				IntervalChange: pEvent.Status.IntervalChange,
-				ResetDetected:  pEvent.Status.ResetDetected,
-			},
-		}
-
-		for i, addr := range pEvent.Addresses {
-			event.Addresses[i] = db.Address{Address: addr.Address}
-		}
-
-		if err := event.Save(c.db); err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
 func authorize(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -98,6 +64,30 @@ func authorize(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
+func newHTTPHandler(server *httpServer) http.Handler {
+	mux := http.NewServeMux()
+
+	// handleFunc is a replacement for mux.HandleFunc
+	// which enriches the handler's HTTP instrumentation with the pattern as the http.route.
+	handleFunc := func(pattern string, handlerFunc func(http.ResponseWriter, *http.Request)) {
+		// Configure the "http.route" for the HTTP instrumentation.
+		handler := otelhttp.WithRouteTag(pattern, http.HandlerFunc(handlerFunc))
+		mux.Handle(pattern, handler)
+	}
+
+	fs := http.FileServer(http.Dir("assets/"))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs)) // Correctly add to mux
+	// Register handlers.
+	handleFunc("/", server.handleIndex)
+	handleFunc("/events", server.handleEvents)
+	handleFunc("/messages", server.handleMessages)
+	handleFunc("/garmin-outbound", authorize(http.HandlerFunc(server.handleGarminOutbound)))
+
+	// Add HTTP instrumentation for the whole server.
+	handler := otelhttp.NewHandler(mux, "/")
+	return handler
+}
+
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -109,7 +99,6 @@ func HttpServer(addr string) *http.Server {
 	if dbPath == "" {
 		log.Fatal("DB_PATH environment variable is not set")
 	}
-
 	db, err := db.InitializeDB(dbPath)
 	if err != nil {
 		log.Fatal(err)
@@ -117,17 +106,9 @@ func HttpServer(addr string) *http.Server {
 	server := &httpServer{
 		Env: &Env{db: db},
 	}
-	fs := http.FileServer(http.Dir("assets/"))
-	router := mux.NewRouter()
-	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
-
-	router.HandleFunc("/", server.handleIndex).Methods("GET")
-	router.HandleFunc("/events", server.handleEvents).Methods("GET")
-	router.HandleFunc("/messages", server.handleMessages).Methods("POST")
-	router.HandleFunc("/garmin-outbound", authorize(http.HandlerFunc(server.handleGarminOutbound))).Methods("POST")
 
 	return &http.Server{
 		Addr:     ":" + addr,
-		Handler:  router,
+		Handler:  newHTTPHandler(server),
 	}
 }
