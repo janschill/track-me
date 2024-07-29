@@ -42,32 +42,98 @@
         <section class="row">
           <div class="col">
             {{ if .Ride.IsMoving }}
-              Yes
+            Yes
             {{ else }}
-              No
+            No
             {{ end }}
-            <small class="label">Currently Moving</small></div>
-          <div class="col"><div id="lastPing"></div><small class="label">Last Signal</small></div>
+            <small class="label">Currently Moving</small>
+          </div>
+          <div class="col">
+            <div id="lastPing"></div><small class="label">Last Signal</small>
+          </div>
         </section>
         <section class="row">
-          <div class="col">{{ .Ride.Distance }} km<small class="label">Distance</small></div>
-          <div class="col">{{ .Ride.Progress }} %<small class="label">Progress</small></div>
+          <div class="col">
+            {{ if .Ride.Distance }}
+            {{ .Ride.Distance }} km
+            {{ else }}
+            N/A
+            {{ end }}
+            <small class="label">Distance</small>
+          </div>
+          <div class="col">
+            {{ if .Ride.Progress }}
+            {{ .Ride.Progress }} %
+            {{ else }}
+            N/A
+            {{ end }}
+            <small class="label">Progress</small>
+          </div>
         </section>
         <section class="row">
-          <div class="col">{{ .Ride.ElevationGain }} m<small class="label">Elevation Gain</small></div>
-          <div class="col">{{ .Ride.ElevationLoss }} m<small class="label">Elevation Loss</small></div>
+          <div class="col">
+            {{ if .Ride.ElevationGain }}
+            {{ .Ride.ElevationGain }} m
+            {{ else }}
+            N/A
+            {{ end }}
+            <small class="label">Elevation Gain</small>
+          </div>
+          <div class="col">
+            {{ if .Ride.ElevationLoss }}
+            {{ .Ride.ElevationLoss }} m
+            {{ else }}
+            N/A
+            {{ end }}
+            <small class="label">Elevation Loss</small>
+          </div>
         </section>
         <section class="row">
-          <div class="col">{{ .Ride.CurrentSpeed }} km/h<small class="label">Current Speed</small></div>
+          <div class="col">
+            {{ if .Ride.CurrentSpeed }}
+            {{ .Ride.CurrentSpeed }} km/h
+            {{ else }}
+            N/A
+            {{ end }}
+            <small class="label">Current Speed</small>
+          </div>
           <div class="col">{{ .LastEvent.Altitude }} m<small class="label">Current Elevation</small></div>
         </section>
         <section class="row">
-          <div class="col">{{ .Ride.MovingTime }}<small class="label">Moving Time</small></div>
-          <div class="col">{{ .Ride.RestingTime }}<small class="label">Resting Time</small></div>
+          <div class="col">
+            {{ if .Ride.MovingTime }}
+            {{ .Ride.MovingTime }}
+            {{ else }}
+            N/A
+            {{ end }}
+            <small class="label">Moving Time</small>
+          </div>
+          <div class="col">
+            {{ if .Ride.RestingTime }}
+            {{ .Ride.RestingTime }}
+            {{ else }}
+            N/A
+            {{ end }}
+            <small class="label">Resting Time</small>
+          </div>
         </section>
         <section class="row">
-          <div class="col">{{ .Ride.ElapsedDays }} days<small class="label">Elapsed Days</small></div>
-          <div class="col">{{ .Ride.RemainingDays }} days<small class="label">Remaining Days</small></div>
+          <div class="col">
+            {{ if .Ride.ElapsedDays }}
+            {{ .Ride.ElapsedDays }} days
+            {{ else }}
+            N/A
+            {{ end }}
+            <small class="label">Elapsed Days</small>
+          </div>
+          <div class="col">
+            {{ if .Ride.RemainingDays }}
+            {{ .Ride.RemainingDays }} days
+            {{ else }}
+            N/A
+            {{ end }}
+            <small class="label">Remaining Days</small>
+          </div>
         </section>
       </article>
     </section>
@@ -99,7 +165,7 @@
   <div class="days-container">
     <h2>Days</h2>
     <ol>
-    {{ range $i, $d := .Days }}
+      {{ range $i, $d := .Days }}
       <li class="day">
         <header class="day__header">
           <h3 class="day__title">{{ addOne $i }}</h3>
@@ -113,7 +179,7 @@
           <div class="">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
         </section>
       </li>
-    {{ end }}
+      {{ end }}
     </ol>
   </div>
 </div>

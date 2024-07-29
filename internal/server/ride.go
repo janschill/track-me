@@ -20,7 +20,7 @@ func inKm(distance float64) float64 {
 	return distance / 1000
 }
 
-func isMoving(events []db.Event) (float64, bool) {
+func movement(events []db.Event) (float64, bool) {
 	eventCount := len(events)
 	if eventCount < 2 {
 		return 0, false
@@ -57,7 +57,7 @@ func elevation(days []db.Day, events []db.Event) (int64, int64) {
 	return gain, loss
 }
 
-func movingTime(days []db.Day, events []db.Event) int64 {
+func timeMoving(days []db.Day, events []db.Event) int64 {
 	var time int64
 	for _, d := range days {
 		time += int64(d.MovingTimeInSeconds)
@@ -66,7 +66,7 @@ func movingTime(days []db.Day, events []db.Event) int64 {
 }
 
 func restingTime(elapsedDays int, movingTime int64) int64 {
-	return int64(elapsedDays) * 24 * 60 * 60 - movingTime
+	return int64(elapsedDays)*24*60*60 - movingTime
 }
 
 func formatTime(seconds int64) string {
@@ -75,4 +75,3 @@ func formatTime(seconds int64) string {
 	seconds = seconds % 60
 	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
 }
-

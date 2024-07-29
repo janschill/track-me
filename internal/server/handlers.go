@@ -142,11 +142,11 @@ func onDay(ts int64) string {
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 	funcMap := template.FuncMap{
 		"wroteOnTime": wroteOnTime,
-		"onDay": onDay,
-		"time": formatTime,
-		"oneDecimal": oneDecimal,
-		"inKm": inKm,
-		"addOne": func(i int) int { return i + 1 },
+		"onDay":       onDay,
+		"time":        formatTime,
+		"oneDecimal":  oneDecimal,
+		"inKm":        inKm,
+		"addOne":      func(i int) int { return i + 1 },
 	}
 	tmpl := template.Must(template.New("layout.html").Funcs(funcMap).ParseFiles("templates/layout.html", "templates/index.html"))
 
@@ -173,15 +173,30 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lastEvent := events[len(events)-1]
-	currentSpeed, isMoving := isMoving(events)
-	dist := distance(days, events)
-	gain, loss := elevation(days, events)
-	movingTime := movingTime(days, events)
-	movingTimeFormatted := formatTime(movingTime)
-	restingTimeFormatted := formatTime(restingTime(len(days), movingTime))
+	var (
+		lastEvent            db.Event
+		currentSpeed         float64
+		isMoving             bool
+		dist                 int64
+		gain                 int64
+		loss                 int64
+		movingTime           int64
+		movingTimeFormatted  string
+		restingTimeFormatted string
+	)
 
-	events = db.Rdp(events, 0.0002) // roughly 1500 -> 321
+	if len(events) > 1 {
+		lastEvent = events[len(events)-1]
+		currentSpeed, isMoving = movement(events)
+		dist = distance(days, events)
+		gain, loss = elevation(days, events)
+		movingTime = timeMoving(days, events)
+		movingTimeFormatted = formatTime(movingTime)
+		restingTimeFormatted = formatTime(restingTime(len(days), movingTime))
+
+		events = db.Rdp(events, 0.0002) // roughly 1500 -> 321
+	}
+
 	eventsJSON, err := json.Marshal(events)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)

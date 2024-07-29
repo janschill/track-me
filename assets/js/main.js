@@ -12,20 +12,31 @@ function setUpMap() {
   // Load traveled path
   // const events = serverData.EventsJSON
   const events = serverData.EventsJSON
-  const pathCoordinates = events.map(event => [event.Latitude, event.Longitude]);
-  const path = L.polyline(pathCoordinates, { color: '#c43514' }).addTo(map).bringToFront();
+  let path;
+  if (events && events.length > 2) {
+    const pathCoordinates = events.map(event => [event.Latitude, event.Longitude]);
+    path = L.polyline(pathCoordinates, { color: '#c43514' }).addTo(map).bringToFront();
+  }
 
   // Load full planned route
   const url = '/static/gpx/Great_Divide_2024.gpx'
   new L.GPX(url, {
     async: true,
     markers: {
-      startIcon: false,
-      endIcon: false
+      startIcon: true,
+      endIcon: true
+    },
+    polyline_options: {
+      color: '#4f4f4f',
+      opacity: 0.5,
+      weight: 3,
+      lineCap: 'round'
     }
   }).on('loaded', function (e) {
     map.fitBounds(e.target.getBounds());
-    path.bringToFront();
+    if (events && events.length > 2) {
+      path.bringToFront();
+    }
   }).addTo(map).bringToBack();
 
   const elevation_options = {
@@ -49,13 +60,19 @@ function setUpMap() {
 
 function calculateLastPing() {
   const lastPingUnix = serverData.LastEvent.TimeStamp;
+  const lastPingElement = document.querySelector('#lastPing');
+  if (!lastPingUnix) {
+    lastPingElement.textContent = `N/A`;
+    return
+  }
   const lastPingDate = new Date(lastPingUnix * 1000);
   const now = new Date();
   const diffInSeconds = Math.floor((now - lastPingDate) / 1000);
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   const diffInHours = Math.floor(diffInMinutes / 60);
-  const lastPingElement = document.querySelector('#lastPing');
-  if (diffInHours > 0) {
+  if (diffInHours < 0) {
+    lastPingElement.textContent = `N/A`;
+  } else if (diffInHours > 0) {
     lastPingElement.textContent = `${diffInHours} hour(s) ago`;
   } else if (diffInMinutes > 0) {
     lastPingElement.textContent = `${diffInMinutes} minute(s) ago`;
