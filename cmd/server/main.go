@@ -37,7 +37,7 @@ func main() {
 
 	port := "8080"
 	log.Default().Println("Server starting on port " + port)
-	srv := server.HttpServer(port)
+	srv := server.HttpServer(port, ctx)
 	srvErr := make(chan error, 1)
 	go func() {
 		srvErr <- srv.ListenAndServe()
