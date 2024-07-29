@@ -67,7 +67,7 @@ func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request
 	}
 
 	log.Printf("GarminOutbound payload received. %v event(s)\n", len(payload.Events))
-	s.EventStore.prepareAndSave(payload)
+	s.Env.prepareAndSave(payload)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Payload received successfully."))
@@ -104,17 +104,17 @@ func (s *httpServer) handleMessages(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Sending message to Garmin: %s\n", message.Message)
 	}
 
-	message.Save(s.EventStore.db)
+	message.Save(s.Env.db)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Message received successfully."))
 }
 
 func (s *httpServer) handleEvents(w http.ResponseWriter, r *http.Request) {
-	s.EventStore.mu.Lock()
-	defer s.EventStore.mu.Unlock()
+	s.Env.mu.Lock()
+	defer s.Env.mu.Unlock()
 
-	if err := json.NewEncoder(w).Encode(s.EventStore.events); err != nil {
+	if err := json.NewEncoder(w).Encode(s.Env.events); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		log.Printf("Error encoding response: %v", err)
 	}
@@ -150,7 +150,7 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	tmpl := template.Must(template.New("layout.html").Funcs(funcMap).ParseFiles("templates/layout.html", "templates/index.html"))
 
-	messages, err := db.GetAllMessages(s.EventStore.db)
+	messages, err := db.GetAllMessages(s.Env.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
 		log.Printf("Error retrieving messages: %v", err)
@@ -158,7 +158,7 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Retrieved %d messages", len(messages))
 
-	events, err := db.GetAllEvents(s.EventStore.db)
+	events, err := db.GetAllEvents(s.Env.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
 		log.Printf("Error retrieving events: %v", err)
@@ -166,7 +166,7 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Retrieved %d events", len(events))
 
-	days, err := db.GetAllDays(s.EventStore.db)
+	days, err := db.GetAllDays(s.Env.db)
 	if err != nil {
 		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
 		log.Printf("Error retrieving days: %v", err)

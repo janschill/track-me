@@ -3,13 +3,11 @@ package server
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/janschill/track-me/internal/db"
@@ -18,10 +16,10 @@ import (
 )
 
 type httpServer struct {
-	EventStore *EventStore
+	Env *Env
 }
 
-type EventStore struct {
+type Env struct {
 	mu     sync.Mutex
 	db     *sql.DB
 	events []db.Event
@@ -39,7 +37,7 @@ var (
 	staticToken = "your-static-token"
 )
 
-func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
+func (c *Env) prepareAndSave(payload GarminOutboundPayload) error {
 	for _, pEvent := range payload.Events {
 		event := db.Event{
 			TripID:      1,
@@ -71,15 +69,6 @@ func (c *EventStore) prepareAndSave(payload GarminOutboundPayload) error {
 		}
 	}
 	return nil
-
-}
-
-func reduce(events []db.Event) []db.Event {
-	return events
-}
-
-func fillCache() {
-
 }
 
 func authorize(next http.HandlerFunc) http.HandlerFunc {
@@ -116,8 +105,6 @@ func init() {
 }
 
 func HttpServer(addr string) *http.Server {
-	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
-
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
 		log.Fatal("DB_PATH environment variable is not set")
@@ -128,7 +115,7 @@ func HttpServer(addr string) *http.Server {
 		log.Fatal(err)
 	}
 	server := &httpServer{
-		EventStore: &EventStore{db: db},
+		Env: &Env{db: db},
 	}
 	fs := http.FileServer(http.Dir("assets/"))
 	router := mux.NewRouter()
@@ -139,14 +126,8 @@ func HttpServer(addr string) *http.Server {
 	router.HandleFunc("/messages", server.handleMessages).Methods("POST")
 	router.HandleFunc("/garmin-outbound", authorize(http.HandlerFunc(server.handleGarminOutbound))).Methods("POST")
 
-	nextRequestID := func() string {
-		return fmt.Sprintf("%d", time.Now().UnixNano())
-	}
-	loggedRouter := Tracing(nextRequestID)(Logging(logger)(router))
-
 	return &http.Server{
 		Addr:     ":" + addr,
-		Handler:  loggedRouter,
-		ErrorLog: logger,
+		Handler:  router,
 	}
 }
