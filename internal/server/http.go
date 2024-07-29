@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/janschill/track-me/internal/db"
 	"github.com/joho/godotenv"
@@ -94,7 +96,7 @@ func init() {
 	}
 }
 
-func HttpServer(addr string) *http.Server {
+func HttpServer(addr string, ctx context.Context) *http.Server {
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
 		log.Fatal("DB_PATH environment variable is not set")
@@ -110,5 +112,8 @@ func HttpServer(addr string) *http.Server {
 	return &http.Server{
 		Addr:     ":" + addr,
 		Handler:  newHTTPHandler(server),
+		BaseContext:  func(_ net.Listener) context.Context { return ctx },
+		ReadTimeout:  time.Second,
+		WriteTimeout: 10 * time.Second,
 	}
 }
