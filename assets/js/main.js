@@ -11,7 +11,7 @@ function setUpMap() {
   }).addTo(map);
   // Load traveled path
   // const events = serverData.EventsJSON
-  const events = serverData.EventsJSON
+  const events = serverData.DaysEventsJSON
   let path;
   if (events && events.length > 2) {
     const pathCoordinates = events.map(event => [event.Latitude, event.Longitude]);

@@ -1,15 +1,15 @@
 {{define "body"}}
 <div class="parent">
   <aside class="aside-container">
-    <h1>The Great Divide Mountain Bike Route </h1>
-    <article class="mb-20">
+    <h1 class="aside__title">The Great Divide Mountain Bike Route </h1>
+    <article class="aside__text mb-20">
       <p>For the next 30 days I will be riding my bicycle with two friends from Canada to Mexico.</p>
       <p>You can see the planned route in blue and the completed part in red on the map. I am carrying a GPS tracker
         that will update the map with my live location and all other stats every 10 minutes. This GPS tracker can also
         send and receive messages, further down is a way of sending me messages either through space via satellites
         directly to the tracker or just simply through copper and fiber optic to this website.</p>
     </article>
-    <section class="mb-20">
+    <section class="aside__route mb-20">
       <h2>Planned Route</h2>
       <article class="block col-2">
         <section class="row">
@@ -36,7 +36,7 @@
         </section>
       </article>
     </section>
-    <section>
+    <section class="aside__ride mb-20">
       <h2>Actual Ride</h2>
       <article class="block col-2">
         <section class="row">
@@ -148,16 +148,20 @@
       <input type="text" id="message" name="message"><br>
       <label for="name">Name:</label>
       <input type="text" id="name" name="name"><br>
-      <label for="sentToGarmin">Sent to Garmin:</label>
+      <label for="sentToGarmin">Send to Garmin:</label>
       <input type="checkbox" id="sentToGarmin" name="sentToGarmin" value="true"><br>
       <input type="submit" value="Submit">
     </form>
     <ul>
       {{ range .Messages }}
-      <li class="message">
-        <p>{{ .Name }} wrote <small>{{ wroteOnTime .TimeStamp }}</small></p>
-        <p>{{ .Message }}</p>
-        <p></p>
+      <li class="day">
+        <header class="day__header day__header--baseline">
+          <h3 class="day__title ft-l">{{ .Name }} wrote </h3>
+          <small class="day__subtitle">{{ wroteOnTime .TimeStamp }}</small>
+        </header>
+        <section>
+          {{ .Message }}
+        </section>
       </li>
       {{ end }}
     </ul>
@@ -172,11 +176,11 @@
           <small class="day__subtitle">{{ onDay $d.TimeStamp }}</small>
         </header>
         <section class="row row-flex">
-          <div class="">{{ oneDecimal (inKm $d.TotalDistance) }} km<small class="label">Distance</small></div>
-          <div class="">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
-          <div class="">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
-          <div class="">{{ $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>
-          <div class="">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
+          <div class="day_metric">{{ oneDecimal (inKm $d.TotalDistance) }} km<small class="label">Distance</small></div>
+          <div class="day_metric">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
+          <div class="day_metric">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
+          <div class="day_metric">{{ $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>
+          <div class="day_metric">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
         </section>
       </li>
       {{ end }}

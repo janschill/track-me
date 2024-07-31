@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/janschill/track-me/internal/db"
 )
@@ -74,4 +75,9 @@ func formatTime(seconds int64) string {
 	minutes := (seconds % 3600) / 60
 	seconds = seconds % 60
 	return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
+}
+
+func onDay(ts int64) string {
+	t := time.Unix(ts, 0)
+	return t.Format("02 January")
 }

@@ -10,6 +10,8 @@
 - leaflet
   - [leaflet-gpx](https://github.com/mpetazzoni/leaflet-gpx)
   - [leaflet-elevation](https://github.com/Raruto/leaflet-elevation)
+- BetterStack for uptime monitor
+- TODO: Grafana for logs, metrics, traces
 
 ## IPC Inbound & Outbound
 

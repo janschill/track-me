@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"html/template"
@@ -156,21 +157,15 @@ func (s *httpServer) handleEvents(w http.ResponseWriter, r *http.Request) {
 
 type IndexPageData struct {
 	Messages   []db.Message
-	Events     []db.Event
 	LastEvent  db.Event
-	EventsJSON template.JS
 	Ride       Ride
 	Days       []db.Day
+	DaysEventsJSON template.JS
 }
 
 func wroteOnTime(ts int64) string {
 	t := time.Unix(ts, 0)
 	return t.Format("on 02 January at 15:04")
-}
-
-func onDay(ts int64) string {
-	t := time.Unix(ts, 0)
-	return t.Format("02 January")
 }
 
 func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
@@ -207,6 +202,15 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var combinedPoints []string
+
+	for _, day := range days {
+		trimmedPoints := strings.Trim(day.Points, "[]")
+		combinedPoints = append(combinedPoints, trimmedPoints)
+	}
+
+	daysEventsJSON := "[" + strings.Join(combinedPoints, ",") + "]"
+
 	var (
 		lastEvent            db.Event
 		currentSpeed         float64
@@ -227,22 +231,11 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 		movingTime = timeMoving(days, events)
 		movingTimeFormatted = formatTime(movingTime)
 		restingTimeFormatted = formatTime(restingTime(len(days), movingTime))
-
-		events = db.Rdp(events, 0.0002) // roughly 1500 -> 321
-	}
-
-	eventsJSON, err := json.Marshal(events)
-	if err != nil {
-		http.Error(w, "An unexpected error happened.", http.StatusBadGateway)
-		log.Printf("Error marshalling events: %v", err)
-		return
 	}
 
 	data := IndexPageData{
 		Messages:   messages,
-		Events:     events,
 		LastEvent:  lastEvent,
-		EventsJSON: template.JS(eventsJSON),
 		Ride: Ride{
 			IsMoving:      isMoving,
 			LastPing:      lastEvent.TimeStamp,
@@ -257,6 +250,7 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 			RemainingDays: 30 - len(days),
 		},
 		Days: days,
+		DaysEventsJSON: template.JS(daysEventsJSON),
 	}
 
 	err = tmpl.Execute(w, data)

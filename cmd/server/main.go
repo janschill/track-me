@@ -52,5 +52,4 @@ func main() {
 		stop()
 	}
 	err = srv.Shutdown(context.Background())
-	return
 }
