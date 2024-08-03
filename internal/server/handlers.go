@@ -119,9 +119,16 @@ func (s *httpServer) handleMessages(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing form", http.StatusInternalServerError)
 		return
 	}
+
 	log.Printf("Message received: %s\n", r.FormValue("message"))
 	log.Printf("Name: %s\n", r.FormValue("name"))
 	log.Printf("Sent to Garmin: %v\n", r.FormValue("sentToGarmin"))
+
+	if r.FormValue("message") == "" || r.FormValue("name") == "" {
+		http.Error(w, "Name or message cannot be blank", http.StatusBadRequest)
+		return
+	}
+
 	sentToGarmin, err := strconv.ParseBool(r.FormValue("sentToGarmin"))
 	if err != nil {
 		sentToGarmin = false
