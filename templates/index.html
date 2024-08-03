@@ -143,24 +143,29 @@
   </div>
   <div class="messages-container">
     <h2>Messages</h2>
-    <form action="/messages" method="post">
-      <label for="message">Message:</label>
-      <input type="text" id="message" name="message"><br>
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name"><br>
-      <label for="sentToGarmin">Send to Garmin:</label>
-      <input type="checkbox" id="sentToGarmin" name="sentToGarmin" value="true"><br>
-      <input type="submit" value="Submit">
+    <form class="box" action="/messages" method="post">
+      <label hidden for="name">Name:</label>
+      <input class="text-box" required type="text" id="name" name="name" placeholder="Your name"><br>
+      <label hidden for="message">Message:</label>
+      <textarea class="text-box" rows="4" required minlength="2" maxlength="160" type="text" id="message" name="message" placeholder="Write a message..."></textarea><br>
+      <div class="flex">
+        <div>
+          <input type="checkbox" id="sentToGarmin" name="sentToGarmin" value="true">
+          <label for="sentToGarmin">Send to my tracker*</label>
+        </div>
+        <input class="button" type="submit" value="Send">
+      </div>
+      <small class="disclaimer">*I will receive the message immediately on my Garmin Tracker.</small>
     </form>
     <ul>
       {{ range .Messages }}
-      <li class="day">
-        <header class="day__header day__header--baseline">
-          <h3 class="day__title ft-l">{{ .Name }} wrote </h3>
-          <small class="day__subtitle">{{ wroteOnTime .TimeStamp }}</small>
+      <li class="box">
+        <header class="box__header box__header--baseline">
+          <h3 class="box__title ft-l">{{ .Name }} wrote </h3>
+          <small class="box__subtitle">{{ wroteOnTime .TimeStamp }}</small>
         </header>
         <section>
-          {{ .Message }}
+          <p>{{ .Message }}</p>
         </section>
       </li>
       {{ end }}
@@ -170,17 +175,17 @@
     <h2>Days</h2>
     <ol>
       {{ range $i, $d := .Days }}
-      <li class="day">
-        <header class="day__header">
-          <h3 class="day__title">{{ addOne $i }}</h3>
-          <small class="day__subtitle">{{ onDay $d.TimeStamp }}</small>
+      <li class="box">
+        <header class="box__header">
+          <h3 class="box__title">{{ addOne $i }}</h3>
+          <small class="box__subtitle">{{ onDay $d.TimeStamp }}</small>
         </header>
         <section class="row row-flex">
-          <div class="day_metric">{{ oneDecimal (inKm $d.TotalDistance) }} km<small class="label">Distance</small></div>
-          <div class="day_metric">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
-          <div class="day_metric">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
-          <div class="day_metric">{{ $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>
-          <div class="day_metric">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
+          <div class="box_metric">{{ oneDecimal (inKm $d.TotalDistance) }} km<small class="label">Distance</small></div>
+          <div class="box_metric">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
+          <div class="box_metric">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
+          <div class="box_metric">{{ $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>
+          <div class="box_metric">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
         </section>
       </li>
       {{ end }}
