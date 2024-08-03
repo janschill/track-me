@@ -71,7 +71,7 @@ type Message struct {
 }
 
 func GetAllMessages(db *sql.DB) ([]Message, error) {
-	rows, err := db.Query(`SELECT id, tripId, message, name, timeStamp, sentToGarmin FROM messages ORDER BY timeStamp`)
+	rows, err := db.Query(`SELECT id, tripId, message, name, timeStamp, sentToGarmin FROM messages ORDER BY timeStamp DESC`)
 	if err != nil {
 		log.Printf("Error querying messages: %v", err)
 		return nil, err

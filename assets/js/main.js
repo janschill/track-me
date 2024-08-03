@@ -1,3 +1,28 @@
+function appendMessage(data) {
+  const messagesList = document.getElementById('messagesList');
+
+  const li = document.createElement('li');
+  li.className = 'box';
+
+  const header = document.createElement('header');
+  header.className = 'box__header box__header--baseline';
+
+  const h3 = document.createElement('h3');
+  h3.className = 'box__title ft-l';
+  h3.textContent = `${data.name} wrote `;
+  header.appendChild(h3);
+
+  li.appendChild(header);
+
+  const section = document.createElement('section');
+  const p = document.createElement('p');
+  p.textContent = data.message;
+  section.appendChild(p);
+  li.appendChild(section);
+
+  messagesList.prepend(li);
+}
+
 function setUpMap() {
   const latitude = serverData.LastEvent.Latitude
   const longitude = serverData.LastEvent.Longitude
@@ -81,7 +106,34 @@ function calculateLastPing() {
   }
 }
 
+function setUpForm() {
+  const messageForm = document.getElementById('messageForm');
+  messageForm.addEventListener('submit', (e) => {
+    e.preventDefault()
+
+    // const formData = new FormData(e.target);
+    const data = new URLSearchParams(new FormData(messageForm));
+    fetch('/messages', {
+      method: 'POST',
+      body: data
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        appendMessage(data)
+        messageForm.reset()
+      })
+      .catch(error => console.error('Error:', error));
+  })
+
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   setUpMap()
+  setUpForm()
   calculateLastPing()
 });

@@ -142,7 +142,13 @@ func (s *httpServer) handleMessages(w http.ResponseWriter, r *http.Request) {
 	message.Save(s.Env.db)
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Message received successfully."))
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": message.Message,
+		"name": message.Name,
+		"timeStamp": strconv.FormatInt(message.TimeStamp, 10),
+		"sentToGarmin": strconv.FormatBool(message.SentToGarmin),
+	})
 }
 
 func (s *httpServer) handleEvents(w http.ResponseWriter, r *http.Request) {

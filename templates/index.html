@@ -143,7 +143,7 @@
   </div>
   <div class="messages-container">
     <h2>Messages</h2>
-    <form class="box" action="/messages" method="post">
+    <form id="messageForm" class="box" action="/messages" method="post">
       <label hidden for="name">Name:</label>
       <input class="text-box" required type="text" id="name" name="name" placeholder="Your name"><br>
       <label hidden for="message">Message:</label>
@@ -157,7 +157,7 @@
       </div>
       <small class="disclaimer">*I will receive the message immediately on my Garmin Tracker.</small>
     </form>
-    <ul>
+    <ul id="messagesList">
       {{ range .Messages }}
       <li class="box">
         <header class="box__header box__header--baseline">
