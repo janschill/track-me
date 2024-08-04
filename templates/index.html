@@ -97,7 +97,7 @@
             {{ end }}
             <small class="label">Current Speed</small>
           </div>
-          <div class="col">{{ .LastEvent.Altitude }} m<small class="label">Current Elevation</small></div>
+          <div class="col">{{ oneDecimal .LastEvent.Altitude }} m<small class="label">Current Elevation</small></div>
         </section>
         <section class="row">
           <div class="col">

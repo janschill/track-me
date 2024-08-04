@@ -98,13 +98,6 @@ func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// bodyBytes, err := io.ReadAll(r.Body)
-	// if err != nil {
-	// 	http.Error(w, "Error reading body", http.StatusInternalServerError)
-	// 	return
-	// }
-	// log.Printf("body: %v", string(bodyBytes))
-
 	var payload GarminOutboundPayload
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
