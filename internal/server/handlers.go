@@ -43,7 +43,7 @@ type GarminOutboundPayload struct {
 		Point struct {
 			Latitude  float64 `json:"latitude"`
 			Longitude float64 `json:"longitude"`
-			Altitude  int     `json:"altitude"`
+			Altitude  float64 `json:"altitude"`
 			GpsFix    int     `json:"gpsFix"`
 			Course    int     `json:"course"`
 			Speed     int     `json:"speed"`
@@ -69,7 +69,7 @@ func (c *Env) prepareAndSave(payload GarminOutboundPayload) error {
 			Addresses:   make([]db.Address, len(pEvent.Addresses)),
 			Latitude:    pEvent.Point.Latitude,
 			Longitude:   pEvent.Point.Longitude,
-			Altitude:    int64(pEvent.Point.Altitude),
+			Altitude:    pEvent.Point.Altitude,
 			GpsFix:      pEvent.Point.GpsFix,
 			Course:      pEvent.Point.Course,
 			Speed:       pEvent.Point.Speed,

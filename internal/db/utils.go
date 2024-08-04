@@ -116,11 +116,11 @@ func CalculateDistance(events []Event) float64 {
 	return kms * 1000 // return in meters
 }
 
-func CalculateAltitudes(events []Event) (averageAltitude, maxAltitude, minAltitude int64) {
+func CalculateAltitudes(events []Event) (averageAltitude, maxAltitude, minAltitude float64) {
 	if len(events) < 1 {
 		return 0, 0, 0
 	}
-	var totalAltitude int64
+	var totalAltitude float64
 	minAltitude = math.MaxInt64
 	for _, event := range events {
 		if event.Altitude > maxAltitude {
@@ -131,7 +131,7 @@ func CalculateAltitudes(events []Event) (averageAltitude, maxAltitude, minAltitu
 		}
 		totalAltitude += event.Altitude
 	}
-	averageAltitude = totalAltitude / int64(len(events))
+	averageAltitude = totalAltitude / float64(len(events))
 	return averageAltitude, maxAltitude, minAltitude
 }
 
@@ -143,9 +143,9 @@ func CalculateElevationGainAndLoss(events []Event) (elevationGain, elevationLoss
 	for i := 1; i < len(events); i++ {
 		altitudeDiff := events[i].Altitude - events[i-1].Altitude
 		if altitudeDiff > 0 {
-			elevationGain += altitudeDiff
+			elevationGain += int64(altitudeDiff)
 		} else {
-			elevationLoss -= altitudeDiff
+			elevationLoss -= int64(altitudeDiff)
 		}
 	}
 	return elevationGain, elevationLoss

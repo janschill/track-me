@@ -103,7 +103,7 @@ func convertPointsToEvents(points []TestPoint) []Event {
 		events[i] = Event{
 			Longitude: point.Longitude,
 			Latitude:  point.Latitude,
-			Altitude:  int64(point.Altitude),
+			Altitude:  point.Altitude,
 			TimeStamp: point.TimeStamp,
 		}
 	}
@@ -145,7 +145,7 @@ func Seed(filePath string) {
 	for _, point := range data.Points {
 		timeStamp := currentTime.Unix()
 		_, err = Db.Exec("INSERT INTO events(tripId, imei, messageCode, timeStamp, latitude, longitude, altitude, gpsFix, course, speed, autonomous, lowBattery, intervalChange, resetDetected) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-			1, "fake-imei", 0, timeStamp, point.Latitude, point.Longitude, int(point.Altitude), 0, 0, 0, 0, 0, 0, 0)
+			1, "fake-imei", 0, timeStamp, point.Latitude, point.Longitude, point.Altitude, 0, 0, 0, 0, 0, 0, 0)
 		if err != nil {
 			log.Fatal("Failed to insert into events table:", err)
 		}

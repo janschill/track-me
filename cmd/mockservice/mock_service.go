@@ -31,7 +31,7 @@ type Address struct {
 type Point struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
-	Altitude  int     `json:"altitude"`
+	Altitude  float64 `json:"altitude"`
 	GpsFix    int     `json:"gpsFix"`
 	Course    int     `json:"course"`
 	Speed     int     `json:"speed"`
@@ -46,12 +46,12 @@ type Status struct {
 
 var lastLatitude float64 = 31.3331459241914
 var lastLongitude float64 = -108.530207744702
-var lastAltitude int = 1421
+var lastAltitude float64 = 1421.0
 
 func generateMockEvent() Event {
 	latitudeDeviation := randomFloatInRange(-0.0001, 0.0001)
 	longitudeDeviation := randomFloatInRange(-0.0001, 0.0001)
-	altitudeDeviation := rand.Intn(3) - 1 // -1, 0, or 1
+	altitudeDeviation := randomFloatInRange(-0.0001, 0.0001)
 
 	// Update last known coordinates
 	lastLatitude += latitudeDeviation

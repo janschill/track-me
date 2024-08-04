@@ -25,7 +25,7 @@ type Event struct {
 	Status      Status
 	Latitude    float64
 	Longitude   float64
-	Altitude    int64
+	Altitude    float64
 	GpsFix      int
 	Course      int
 	Speed       int
@@ -43,8 +43,8 @@ type Day struct {
 	ElevationGain          int64
 	ElevationLoss          int64
 	AverageAltitude        float64
-	MaxAltitude            int64
-	MinAltitude            int64
+	MaxAltitude            float64
+	MinAltitude            float64
 	MovingTimeInSeconds    int64
 	NumberOfStops          int64
 	TotalStopTimeInSeconds int64

@@ -25,7 +25,7 @@ type DayEvent struct {
 	} `json:"Status"`
 	Latitude     float64 `json:"Latitude"`
 	Longitude    float64 `json:"Longitude"`
-	Altitude     int     `json:"Altitude"`
+	Altitude     float64 `json:"Altitude"`
 	GpsFix       int     `json:"GpsFix"`
 	Course       int     `json:"Course"`
 	Speed        int     `json:"Speed"`
