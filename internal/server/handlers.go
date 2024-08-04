@@ -10,6 +10,7 @@ import (
 
 	"html/template"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/janschill/track-me/internal/db"
 )
 
@@ -98,6 +99,7 @@ func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		http.Error(w, "Error parsing request body", http.StatusInternalServerError)
+		sentry.CaptureException(err)
 		return
 	}
 
