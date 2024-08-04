@@ -31,11 +31,13 @@ type Ride struct {
 type GarminOutboundPayload struct {
 	Version string `json:"Version"`
 	Events  []struct {
-		Imei        string `json:"imei"`
-		MessageCode int    `json:"messageCode"`
-		FreeText    string `json:"freeText"`
-		TimeStamp   int64  `json:"timeStamp"`
-		Addresses   []struct {
+		Imei              string `json:"imei"`
+		MessageCode       int    `json:"messageCode"`
+		FreeText          string `json:"freeText"`
+		TimeStamp         int64  `json:"timeStamp"`
+		PingbackReceived  int64  `json:"pingbackReceived"`
+		PingbackResponded int64  `json:"pingbackResponded"`
+		Addresses         []struct {
 			Address string `json:"address"`
 		} `json:"addresses"`
 		Point struct {
@@ -52,6 +54,7 @@ type GarminOutboundPayload struct {
 			IntervalChange int `json:"intervalChange"`
 			ResetDetected  int `json:"resetDetected"`
 		} `json:"status"`
+		Payload string `json:"payload"`
 	} `json:"Events"`
 }
 
@@ -101,7 +104,7 @@ func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request
 		http.Error(w, "Error parsing request body", http.StatusInternalServerError)
 		if hub := sentry.GetHubFromContext(r.Context()); hub != nil {
 			hub.CaptureMessage(err.Error())
-			log.Fatal(err)
+			log.Printf("Error. %v\n", err)
 		}
 		return
 	}
@@ -156,9 +159,9 @@ func (s *httpServer) handleMessages(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": message.Message,
-		"name": message.Name,
-		"timeStamp": strconv.FormatInt(message.TimeStamp, 10),
+		"message":      message.Message,
+		"name":         message.Name,
+		"timeStamp":    strconv.FormatInt(message.TimeStamp, 10),
 		"sentToGarmin": strconv.FormatBool(message.SentToGarmin),
 	})
 }
@@ -174,10 +177,10 @@ func (s *httpServer) handleEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 type IndexPageData struct {
-	Messages   []db.Message
-	LastEvent  db.Event
-	Ride       Ride
-	Days       []db.Day
+	Messages       []db.Message
+	LastEvent      db.Event
+	Ride           Ride
+	Days           []db.Day
 	DaysEventsJSON template.JS
 }
 
@@ -252,8 +255,8 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := IndexPageData{
-		Messages:   messages,
-		LastEvent:  lastEvent,
+		Messages:  messages,
+		LastEvent: lastEvent,
 		Ride: Ride{
 			IsMoving:      isMoving,
 			LastPing:      lastEvent.TimeStamp,
@@ -267,7 +270,7 @@ func (s *httpServer) handleIndex(w http.ResponseWriter, r *http.Request) {
 			ElapsedDays:   len(days),
 			RemainingDays: 30 - len(days),
 		},
-		Days: days,
+		Days:           days,
 		DaysEventsJSON: template.JS(daysEventsJSON),
 	}
 
