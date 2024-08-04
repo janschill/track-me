@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -24,17 +23,6 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	otelShutdown, err := server.SetupOTelSDK(ctx)
-	if err != nil {
-		return
-	}
-	if err != nil {
-			log.Fatalf("Failed to set up OpenTelemetry: %v", err)
-	}
-	defer func() {
-		err = errors.Join(err, otelShutdown(context.Background()))
-	}()
-
 	port := "8080"
 	log.Default().Println("Server starting on port " + port)
 	srv := server.HttpServer(port, ctx)
@@ -43,13 +31,12 @@ func main() {
 		srvErr <- srv.ListenAndServe()
 	}()
 	select {
-	case err = <-srvErr:
-		// Error when starting HTTP server.
-		return
+	case err := <-srvErr:
+			log.Fatalf("HTTP server error: %v", err)
 	case <-ctx.Done():
-		// Wait for first CTRL+C.
-		// Stop receiving signal notifications as soon as possible.
-		stop()
+			stop()
 	}
-	err = srv.Shutdown(context.Background())
+	if err := srv.Shutdown(context.Background()); err != nil {
+			log.Fatalf("HTTP server shutdown error: %v", err)
+	}
 }

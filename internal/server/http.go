@@ -11,10 +11,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/getsentry/sentry-go"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/janschill/track-me/internal/db"
 	"github.com/joho/godotenv"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"golang.org/x/oauth2"
 )
 
 type httpServer struct {
@@ -28,16 +28,6 @@ type Env struct {
 	cache  map[int]db.Event
 }
 
-var (
-	oauthConfig = &oauth2.Config{
-		ClientID:     "your-client-id",
-		ClientSecret: "your-client-secret",
-		Endpoint: oauth2.Endpoint{
-			TokenURL: "https://your-oauth-provider.com/token",
-		},
-	}
-	staticToken = "your-static-token"
-)
 
 func authorize(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -49,50 +39,41 @@ func authorize(next http.HandlerFunc) http.HandlerFunc {
 
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 		log.Printf("token: %v", token)
-		if token == staticToken {
+		if token == "Test" {
 			log.Println("")
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		tokenSource := oauthConfig.TokenSource(context.TODO(), &oauth2.Token{AccessToken: token})
-		_, err := tokenSource.Token()
-		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		next.ServeHTTP(w, r)
 	})
 }
 
 func newHTTPHandler(server *httpServer) http.Handler {
 	mux := http.NewServeMux()
-
-	// handleFunc is a replacement for mux.HandleFunc
-	// which enriches the handler's HTTP instrumentation with the pattern as the http.route.
-	handleFunc := func(pattern string, handlerFunc func(http.ResponseWriter, *http.Request)) {
-		// Configure the "http.route" for the HTTP instrumentation.
-		handler := otelhttp.WithRouteTag(pattern, http.HandlerFunc(handlerFunc))
-		mux.Handle(pattern, handler)
-	}
+	sentryHandler := sentryhttp.New(sentryhttp.Options{})
 
 	fs := http.FileServer(http.Dir("assets/"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs)) // Correctly add to mux
-	// Register handlers.
-	handleFunc("/", server.handleIndex)
-	handleFunc("/events", server.handleEvents)
-	handleFunc("/messages", server.handleMessages)
-	handleFunc("/garmin-outbound", authorize(http.HandlerFunc(server.handleGarminOutbound)))
 
-	// Add HTTP instrumentation for the whole server.
-	handler := otelhttp.NewHandler(mux, "/")
-	return handler
+	mux.Handle("/", sentryHandler.Handle(http.HandlerFunc(server.handleIndex)))
+	mux.Handle("/events", sentryHandler.Handle(http.HandlerFunc(server.handleEvents)))
+	mux.Handle("/messages", sentryHandler.Handle(http.HandlerFunc(server.handleMessages)))
+	mux.Handle("/garmin-outbound", sentryHandler.Handle(authorize(http.HandlerFunc(server.handleGarminOutbound))))
+
+	return mux
 }
 
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
+	}
+	if err := sentry.Init(sentry.ClientOptions{
+		Dsn: os.Getenv("SENTRY_DSN"),
+		TracesSampleRate: 1.0,
+	}); err != nil {
+		log.Fatalf("Sentry initialization failed: %v\n", err)
 	}
 }
 
@@ -110,8 +91,8 @@ func HttpServer(addr string, ctx context.Context) *http.Server {
 	}
 
 	return &http.Server{
-		Addr:     ":" + addr,
-		Handler:  newHTTPHandler(server),
+		Addr:         ":" + addr,
+		Handler:      newHTTPHandler(server),
 		BaseContext:  func(_ net.Listener) context.Context { return ctx },
 		ReadTimeout:  time.Second,
 		WriteTimeout: 10 * time.Second,

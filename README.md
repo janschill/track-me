@@ -1,5 +1,7 @@
 # Track Me
 
+[![Better Stack Badge](https://uptime.betterstack.com/status-badges/v1/monitor/1gy4z.svg)](https://uptime.betterstack.com/?utm_source=status_badge)
+
 - Professional Garmin Explore Plan needed
 - inReach Mini 2
 
@@ -33,3 +35,8 @@ go install github.com/air-verse/air@latest
 # add go/bin/air binary as an alias
 echo "alias air=$(go env GOPATH)" >> ~/.zshrc
 ```
+
+## References
+
+- [Organising Database Access in Go](https://www.alexedwards.net/blog/organising-database-access)
+- [Better Stack](https://uptime.betterstack.com/team/245141/monitors/2470355)
