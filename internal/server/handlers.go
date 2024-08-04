@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -45,8 +46,8 @@ type GarminOutboundPayload struct {
 			Longitude float64 `json:"longitude"`
 			Altitude  float64 `json:"altitude"`
 			GpsFix    int     `json:"gpsFix"`
-			Course    int     `json:"course"`
-			Speed     int     `json:"speed"`
+			Course    float64 `json:"course"`
+			Speed     float64 `json:"speed"`
 		} `json:"point"`
 		Status struct {
 			Autonomous     int `json:"autonomous"`
@@ -98,8 +99,15 @@ func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading body", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("body: %v", string(bodyBytes))
+
 	var payload GarminOutboundPayload
-	err := json.NewDecoder(r.Body).Decode(&payload)
+	err = json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		http.Error(w, "Error parsing request body", http.StatusInternalServerError)
 		if hub := sentry.GetHubFromContext(r.Context()); hub != nil {

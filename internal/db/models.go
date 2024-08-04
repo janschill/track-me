@@ -27,8 +27,8 @@ type Event struct {
 	Longitude   float64
 	Altitude    float64
 	GpsFix      int
-	Course      int
-	Speed       int
+	Course      float64
+	Speed       float64
 }
 
 type Day struct {
