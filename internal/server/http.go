@@ -28,7 +28,6 @@ type Env struct {
 	cache  map[int]db.Event
 }
 
-
 func authorize(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -38,9 +37,10 @@ func authorize(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		token := strings.TrimPrefix(authHeader, "Bearer ")
+		expectedToken := os.Getenv("AUTHORIZATION_TOKEN")
 		log.Printf("token: %v", token)
-		if token == "Test" {
-			log.Println("")
+
+		if token == expectedToken {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -70,7 +70,7 @@ func init() {
 		log.Println("No .env file found")
 	}
 	if err := sentry.Init(sentry.ClientOptions{
-		Dsn: os.Getenv("SENTRY_DSN"),
+		Dsn:              os.Getenv("SENTRY_DSN"),
 		TracesSampleRate: 1.0,
 	}); err != nil {
 		log.Fatalf("Sentry initialization failed: %v\n", err)
