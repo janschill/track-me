@@ -99,7 +99,10 @@ func (s *httpServer) handleGarminOutbound(w http.ResponseWriter, r *http.Request
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		http.Error(w, "Error parsing request body", http.StatusInternalServerError)
-		sentry.CaptureException(err)
+		if hub := sentry.GetHubFromContext(r.Context()); hub != nil {
+			hub.CaptureMessage(err.Error())
+			log.Fatal(err)
+		}
 		return
 	}
 
