@@ -90,7 +90,7 @@ function calculateLastPing() {
     lastPingElement.textContent = `N/A`;
     return
   }
-  const lastPingDate = new Date(lastPingUnix * 1000);
+  const lastPingDate = new Date(lastPingUnix);
   const now = new Date();
   const diffInSeconds = Math.floor((now - lastPingDate) / 1000);
   const diffInMinutes = Math.floor(diffInSeconds / 60);
