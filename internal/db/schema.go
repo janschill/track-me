@@ -81,6 +81,7 @@ var schema = Schema{
 			name TEXT,
 			message TEXT,
 			sentToGarmin INTEGER,
+			fromGarmin INTEGER,
 			FOREIGN KEY(tripId) REFERENCES trips(id)
 			);`,
 		},

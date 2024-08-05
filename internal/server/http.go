@@ -55,7 +55,7 @@ func newHTTPHandler(server *httpServer) http.Handler {
 	sentryHandler := sentryhttp.New(sentryhttp.Options{})
 
 	fs := http.FileServer(http.Dir("assets/"))
-	mux.Handle("/static/", http.StripPrefix("/static/", fs)) // Correctly add to mux
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	mux.Handle("/", sentryHandler.Handle(http.HandlerFunc(server.handleIndex)))
 	mux.Handle("/events", sentryHandler.Handle(http.HandlerFunc(server.handleEvents)))

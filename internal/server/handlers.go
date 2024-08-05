@@ -85,6 +85,20 @@ func (c *Env) prepareAndSave(payload GarminOutboundPayload) error {
 			event.Addresses[i] = db.Address{Address: addr.Address}
 		}
 
+		if hasMessage(event) {
+			message := db.Message{
+				TripID:    1,
+				Message:   event.FreeText,
+				Name:      "Automated Message",
+				TimeStamp: event.TimeStamp,
+				FromGarmin: true,
+			}
+
+			if err := message.Save(c.db); err != nil {
+				log.Printf("Failed to save message from event %v", event.ID)
+			}
+		}
+
 		if err := event.Save(c.db); err != nil {
 			return err
 		}
@@ -148,6 +162,7 @@ func (s *httpServer) handleMessages(w http.ResponseWriter, r *http.Request) {
 		Name:         r.FormValue("name"),
 		TimeStamp:    time.Now().Unix(),
 		SentToGarmin: sentToGarmin,
+		FromGarmin: false,
 	}
 
 	if message.SentToGarmin {
@@ -163,6 +178,7 @@ func (s *httpServer) handleMessages(w http.ResponseWriter, r *http.Request) {
 		"name":         message.Name,
 		"timeStamp":    strconv.FormatInt(message.TimeStamp, 10),
 		"sentToGarmin": strconv.FormatBool(message.SentToGarmin),
+		"fromGamin":    strconv.FormatBool(message.FromGarmin),
 	})
 }
 

@@ -68,10 +68,11 @@ type Message struct {
 	Name         string
 	TimeStamp    int64
 	SentToGarmin bool
+	FromGarmin bool
 }
 
 func GetAllMessages(db *sql.DB) ([]Message, error) {
-	rows, err := db.Query(`SELECT id, tripId, message, name, timeStamp, sentToGarmin FROM messages ORDER BY timeStamp DESC`)
+	rows, err := db.Query(`SELECT id, tripId, message, name, timeStamp, sentToGarmin, fromGarmin FROM messages ORDER BY timeStamp DESC`)
 	if err != nil {
 		log.Printf("Error querying messages: %v", err)
 		return nil, err
@@ -82,7 +83,7 @@ func GetAllMessages(db *sql.DB) ([]Message, error) {
 	for rows.Next() {
 		var m Message
 
-		err := rows.Scan(&m.ID, &m.TripID, &m.Message, &m.Name, &m.TimeStamp, &m.SentToGarmin)
+		err := rows.Scan(&m.ID, &m.TripID, &m.Message, &m.Name, &m.TimeStamp, &m.SentToGarmin, &m.FromGarmin)
 		if err != nil {
 			log.Printf("Error scanning message row: %v", err)
 		}
@@ -188,17 +189,17 @@ func (m *Message) Save(db *sql.DB) error {
 		log.Fatal("Couldn't begin save transaction for Message")
 		return err
 	}
-	stmt, err := tx.Prepare("INSERT INTO messages(tripId, message, name, timeStamp, sentToGarmin) VALUES(?,?,?,?,?)")
+	stmt, err := tx.Prepare("INSERT INTO messages(tripId, message, name, timeStamp, sentToGarmin, fromGarmin) VALUES(?,?,?,?,?,?)")
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(m.TripID, m.Message, m.Name, m.TimeStamp, m.SentToGarmin)
+	_, err = stmt.Exec(m.TripID, m.Message, m.Name, m.TimeStamp, m.SentToGarmin, m.FromGarmin)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("Saving new record to database")
+	log.Printf("Saving new message to database")
 	return tx.Commit()
 }
 
@@ -230,7 +231,7 @@ func (e *Event) Save(db *sql.DB) error {
 		}
 	}
 
-	log.Printf("Saving new record to database")
+	log.Printf("Saving new event to database")
 	return tx.Commit()
 }
 
@@ -251,6 +252,6 @@ func (e *Day) Save(db *sql.DB) error {
 		return err
 	}
 
-	log.Printf("Saving new record to database")
+	log.Printf("Saving new day to database")
 	return tx.Commit()
 }

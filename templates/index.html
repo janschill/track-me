@@ -3,8 +3,8 @@
   <aside class="aside-container">
     <h1 class="aside__title">The Great Divide Mountain Bike Route </h1>
     <article class="aside__text mb-20">
-      <p>For the next 30 days I will be riding my bicycle with two friends from Canada to Mexico.</p>
-      <p>You can see the planned route in blue and the completed part in red on the map. I am carrying a GPS tracker
+      <p>For the next 30 days I will be riding my bicycle with my friend Pat from Canada to Mexico.</p>
+      <p>You can see the planned route in blue and the completed part in orange on the map. I am carrying a GPS tracker
         that will update the map with my live location and all other stats every 10 minutes. This GPS tracker can also
         send and receive messages, further down is a way of sending me messages either through space via satellites
         directly to the tracker or just simply through copper and fiber optic to this website.</p>
@@ -90,8 +90,8 @@
         </section>
         <section class="row">
           <div class="col">
-            {{ if .Ride.CurrentSpeed }}
-            {{ .Ride.CurrentSpeed }} km/h
+            {{ if .LastEvent.Speed }}
+            {{ oneDecimal .LastEvent.Speed }} km/h
             {{ else }}
             N/A
             {{ end }}
@@ -159,9 +159,9 @@
     </form>
     <ul id="messagesList">
       {{ range .Messages }}
-      <li class="box">
+      <li class="box {{if .FromGarmin}}box--border{{end}}">
         <header class="box__header box__header--baseline">
-          <h3 class="box__title ft-l">{{ .Name }} wrote </h3>
+          <h3 class="box__title ft-l">{{ .Name }}{{if not .FromGarmin}} wrote{{end}}</h3>
           <small class="box__subtitle">{{ wroteOnTime .TimeStamp }}</small>
         </header>
         <section>

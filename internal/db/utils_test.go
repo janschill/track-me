@@ -75,9 +75,9 @@ func TestCalculateAltitudes(t *testing.T) {
 	tests := []struct {
 		name           string
 		events         []Event
-		expectedAvgAlt int64
-		expectedMaxAlt int64
-		expectedMinAlt int64
+		expectedAvgAlt float64
+		expectedMaxAlt float64
+		expectedMinAlt float64
 	}{
 		{
 			name: "multiple events",
@@ -102,9 +102,9 @@ func TestCalculateAltitudes(t *testing.T) {
 		{
 			name:           "no events",
 			events:         []Event{},
-			expectedAvgAlt: 0,
-			expectedMaxAlt: 0,
-			expectedMinAlt: 0,
+			expectedAvgAlt: 0.0,
+			expectedMaxAlt: 0.0,
+			expectedMinAlt: 0.0,
 		},
 	}
 
@@ -112,13 +112,13 @@ func TestCalculateAltitudes(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			avgAlt, maxAlt, minAlt := CalculateAltitudes(tt.events)
 			if avgAlt != tt.expectedAvgAlt {
-				t.Errorf("CalculateAltitudes() averageAltitude = %d; expected %d", avgAlt, tt.expectedAvgAlt)
+				t.Errorf("CalculateAltitudes() averageAltitude = %f; expected %f", avgAlt, tt.expectedAvgAlt)
 			}
 			if maxAlt != tt.expectedMaxAlt {
-				t.Errorf("CalculateAltitudes() maxAltitude = %d; expected %d", maxAlt, tt.expectedMaxAlt)
+				t.Errorf("CalculateAltitudes() maxAltitude = %f; expected %f", maxAlt, tt.expectedMaxAlt)
 			}
 			if minAlt != tt.expectedMinAlt {
-				t.Errorf("CalculateAltitudes() minAltitude = %d; expected %d", minAlt, tt.expectedMinAlt)
+				t.Errorf("CalculateAltitudes() minAltitude = %f; expected %f", minAlt, tt.expectedMinAlt)
 			}
 		})
 	}
@@ -201,10 +201,10 @@ func TestCalculateStops(t *testing.T) {
 		{
 			name: "multiple events with stops",
 			events: []Event{
-				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200}, // Event 1
-				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459260}, // Event 2 (stop)
-				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459320}, // Event 3
-				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459380}, // Event 4 (stop)
+				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200},
+				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459260},
+				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459320},
+				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459380},
 			},
 			expectedNumberOfStops:          2,
 			expectedTotalStopTimeInSeconds: 120,
@@ -212,9 +212,9 @@ func TestCalculateStops(t *testing.T) {
 		{
 			name: "no stops",
 			events: []Event{
-				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200}, // Event 1
-				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459260}, // Event 2
-				{Latitude: 40.7148, Longitude: -74.0070, TimeStamp: 1609459320}, // Event 3
+				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200},
+				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459260},
+				{Latitude: 40.7148, Longitude: -74.0070, TimeStamp: 1609459320},
 			},
 			expectedNumberOfStops:          0,
 			expectedTotalStopTimeInSeconds: 0,
@@ -243,20 +243,20 @@ func TestCalculateMaxSpeed(t *testing.T) {
 		{
 			name: "multiple events with varying speeds",
 			events: []Event{
-				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200}, // Event 1
-				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459260}, // Event 2
-				{Latitude: 40.7148, Longitude: -74.0070, TimeStamp: 1609459320}, // Event 3
+				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200},
+				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459260},
+				{Latitude: 40.7148, Longitude: -74.0070, TimeStamp: 1609459320},
 			},
-			expectedMaxSpeed: 10.0, // Example value, replace with actual expected max speed
+			expectedMaxSpeed: 10.0,
 		},
 		{
 			name: "constant speed",
 			events: []Event{
-				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200}, // Event 1
-				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459260}, // Event 2
-				{Latitude: 40.7148, Longitude: -74.0070, TimeStamp: 1609459320}, // Event 3
+				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200},
+				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459260},
+				{Latitude: 40.7148, Longitude: -74.0070, TimeStamp: 1609459320},
 			},
-			expectedMaxSpeed: 7.5, // Example value, replace with actual expected speed
+			expectedMaxSpeed: 7.5,
 		},
 	}
 
