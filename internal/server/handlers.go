@@ -65,7 +65,7 @@ func (c *Env) prepareAndSave(payload GarminOutboundPayload) error {
 			Imei:        pEvent.Imei,
 			MessageCode: pEvent.MessageCode,
 			FreeText:    pEvent.FreeText,
-			TimeStamp:   pEvent.TimeStamp,
+			TimeStamp:   pEvent.TimeStamp / 1000, // comes in millisecond format
 			Addresses:   make([]db.Address, len(pEvent.Addresses)),
 			Latitude:    pEvent.Point.Latitude,
 			Longitude:   pEvent.Point.Longitude,

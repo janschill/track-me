@@ -58,7 +58,6 @@ func newHTTPHandler(server *httpServer) http.Handler {
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	mux.Handle("/", sentryHandler.Handle(http.HandlerFunc(server.handleIndex)))
-	mux.Handle("/events", sentryHandler.Handle(http.HandlerFunc(server.handleEvents)))
 	mux.Handle("/messages", sentryHandler.Handle(http.HandlerFunc(server.handleMessages)))
 	mux.Handle("/garmin-outbound", sentryHandler.Handle(http.HandlerFunc(server.handleGarminOutbound)))
 
