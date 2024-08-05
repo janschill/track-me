@@ -2,74 +2,44 @@ package server
 
 import (
 	"context"
-	"database/sql"
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"strings"
-	"sync"
 	"time"
 
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
+	"github.com/janschill/track-me/internal/config"
 	"github.com/janschill/track-me/internal/db"
-	"github.com/joho/godotenv"
+	"github.com/janschill/track-me/internal/handlers"
+	"github.com/janschill/track-me/internal/repository"
 )
 
-type httpServer struct {
-	Env *Env
-}
+var conf *config.Config
 
-type Env struct {
-	mu     sync.Mutex
-	db     *sql.DB
-	events []db.Event
-	cache  map[int]db.Event
-}
-
-func authorize(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		token := strings.TrimPrefix(authHeader, "Bearer ")
-		expectedToken := os.Getenv("AUTHORIZATION_TOKEN")
-		log.Printf("token: %v", token)
-
-		if token == expectedToken {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		next.ServeHTTP(w, r)
-	})
-}
-
-func newHTTPHandler(server *httpServer) http.Handler {
+func newHTTPHandler(repo *repository.Repository) http.Handler {
 	mux := http.NewServeMux()
 	sentryHandler := sentryhttp.New(sentryhttp.Options{})
 
-	fs := http.FileServer(http.Dir("assets/"))
+	fs := http.FileServer(http.Dir("web/assets/"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	mux.Handle("/", sentryHandler.Handle(http.HandlerFunc(server.handleIndex)))
-	mux.Handle("/messages", sentryHandler.Handle(http.HandlerFunc(server.handleMessages)))
-	mux.Handle("/garmin-outbound", sentryHandler.Handle(http.HandlerFunc(server.handleGarminOutbound)))
+	mux.Handle("/", sentryHandler.Handle(http.HandlerFunc(handlers.NewIndexHandler(repo).GetIndex)))
+	mux.Handle("/messages", sentryHandler.Handle(http.HandlerFunc(handlers.NewMessageHandler(repo).CreateMessage)))
+	mux.Handle("/garmin-outbound", sentryHandler.Handle(http.HandlerFunc(handlers.NewGarminHandler(repo).CreateEvent)))
 
 	return mux
 }
 
 func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+	var err error
+	conf, err = config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Couldnt load config %v", err)
 	}
+
 	if err := sentry.Init(sentry.ClientOptions{
-		Dsn:              os.Getenv("SENTRY_DSN"),
+		Dsn: conf.SentryDsn,
 		TracesSampleRate: 1.0,
 	}); err != nil {
 		log.Fatalf("Sentry initialization failed: %v\n", err)
@@ -77,21 +47,18 @@ func init() {
 }
 
 func HttpServer(addr string, ctx context.Context) *http.Server {
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
+	if conf.DatabaseURL == "" {
 		log.Fatal("DB_PATH environment variable is not set")
 	}
-	db, err := db.InitializeDB(dbPath)
+	db, err := db.InitializeDB(conf.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	server := &httpServer{
-		Env: &Env{db: db},
-	}
+	repo := repository.NewRepository(db)
 
 	return &http.Server{
 		Addr:         ":" + addr,
-		Handler:      newHTTPHandler(server),
+		Handler:      newHTTPHandler(repo),
 		BaseContext:  func(_ net.Listener) context.Context { return ctx },
 		ReadTimeout:  time.Second,
 		WriteTimeout: 10 * time.Second,

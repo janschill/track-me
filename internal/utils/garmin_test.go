@@ -1,10 +1,10 @@
-package server
+package utils
 
 import (
 	"slices"
 	"testing"
 
-	"github.com/janschill/track-me/internal/db"
+	"github.com/janschill/track-me/internal/repository"
 )
 
 func TestMakeRange(t *testing.T) {
@@ -35,8 +35,8 @@ func TestHasMessage(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-			event := db.Event{MessageCode: tt.code}
-			got := hasMessage(event)
+			event := repository.Event{MessageCode: tt.code}
+			got := HasMessage(event)
 			if got != tt.want {
 					t.Errorf("hasMessage(%d) = %v, want %v", tt.code, got, tt.want)
 			}
