@@ -106,6 +106,24 @@ function calculateLastPing() {
   }
 }
 
+function updateMovingStatus() {
+  const lastEvent = serverData.LastEvent;
+  const lastPingUnix = lastEvent.TimeStamp;
+  const speed = lastEvent.Speed;
+  const now = new Date();
+  const tenMinutesAgo = new Date(now - 10 * 60000); // 60000 milliseconds in a minute
+
+  const lastPingDate = new Date(lastPingUnix);
+  const isWithinTenMinutes = lastPingDate >= tenMinutesAgo;
+  const hasSpeed = speed > 0;
+  const movingStatusElement = document.querySelector('#isMoving');
+  if (isWithinTenMinutes && hasSpeed) {
+    movingStatusElement.textContent = 'Yes';
+  } else {
+    movingStatusElement.textContent = 'No';
+  }
+}
+
 function setUpForm() {
   const messageForm = document.getElementById('messageForm');
   messageForm.addEventListener('submit', (e) => {

@@ -41,12 +41,7 @@
       <article class="block col-2">
         <section class="row">
           <div class="col">
-            {{ if .Ride.IsMoving }}
-            Yes
-            {{ else }}
-            No
-            {{ end }}
-            <small class="label">Currently Moving</small>
+            <div id="isMoving"></div><small class="label">Currently Moving</small>
           </div>
           <div class="col">
             <div id="lastPing"></div><small class="label">Last Signal</small>
