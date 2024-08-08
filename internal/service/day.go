@@ -15,7 +15,7 @@ type Day struct {
 	Date                   string
 	AverageSpeed           float64
 	MaxSpeed               float64
-	TotalDistance          float64
+	DistanceInMeters       float64
 	ElevationGain          int64
 	ElevationLoss          int64
 	AverageAltitude        float64
@@ -28,7 +28,7 @@ type Day struct {
 
 type Ride struct {
 	LastPing      int64
-	Distance      int64
+	Distance      float64
 	Progress      float64
 	ElevationGain int64
 	ElevationLoss int64
@@ -58,7 +58,7 @@ func (s *DayService) calculateDayStats(date string, events []repository.Event) D
 		Date:                   date,
 		AverageSpeed:           averageSpeed,
 		MaxSpeed:               maxSpeed,
-		TotalDistance:          utils.CalculateDistance(events),
+		DistanceInMeters:       utils.DistanceInMeters(events),
 		ElevationGain:          gain,
 		ElevationLoss:          loss,
 		AverageAltitude:        float64(averageAltitude),
@@ -109,7 +109,7 @@ func (s *DayService) GetDays(events []repository.Event) ([]Day, Ride) {
 			days = append(days, day)
 		}
 
-		totalDistance += day.TotalDistance
+		totalDistance += day.DistanceInMeters
 		totalElevationGain += day.ElevationGain
 		totalElevationLoss += day.ElevationLoss
 		totalMovingTime += day.MovingTimeInSeconds
@@ -132,13 +132,13 @@ func (s *DayService) GetDays(events []repository.Event) ([]Day, Ride) {
 
 	return days, Ride{
 		LastPing:      0,
-		Distance:      int64(totalDistance),
+		Distance:      totalDistance,
 		Progress:      utils.Progress(totalDistance),
 		ElevationGain: totalElevationGain,
 		ElevationLoss: totalElevationLoss,
 		MovingTime:    movingTimeFormatted,
 		RestingTime:   restingTimeFormatted,
 		ElapsedDays:   len(days),
-		RemainingDays: int(math.Max(0, float64(30 - len(days)))), // just making sure we are not going under 0
+		RemainingDays: int(math.Max(0, float64(30-len(days)))), // just making sure we are not going under 0
 	}
 }

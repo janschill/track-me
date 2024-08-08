@@ -30,7 +30,7 @@ func walkTestFiles(t *testing.T, fileHandler func(path string, data GPXData)) {
 	}
 }
 
-func TestCalculateDistance(t *testing.T) {
+func TestDistanceInMeters(t *testing.T) {
 	walkTestFiles(t, func(path string, data GPXData) {
 		expectedDistance, err := strconv.ParseFloat(data.Distance, 64)
 		if err != nil {
@@ -38,11 +38,11 @@ func TestCalculateDistance(t *testing.T) {
 		}
 
 		events := ConvertPointsToEvents(data.Points)
-		result := CalculateDistance(events)
+		result := DistanceInMeters(events)
 		relativeThreshold := 0.05
 
 		if math.Abs(result-expectedDistance) > relativeThreshold*expectedDistance {
-			t.Errorf("CalculateDistance = %f; expected %f (file: %s)", result, expectedDistance, path)
+			t.Errorf("DistanceInMeters = %f; expected %f (file: %s)", result, expectedDistance, path)
 		}
 	})
 }

@@ -50,7 +50,7 @@
         <section class="row">
           <div class="col">
             {{ if .Ride.Distance }}
-            {{ .Ride.Distance }} km
+            {{ oneDecimal (inKm .Ride.Distance) }} km
             {{ else }}
             N/A
             {{ end }}
@@ -176,7 +176,7 @@
           <small class="box__subtitle">{{  onDayFromString $d.Date }}</small>
         </header>
         <section class="row row-flex">
-          <div class="box_metric">{{ oneDecimal (inKm $d.TotalDistance) }} km<small class="label">Distance</small></div>
+          <div class="box_metric">{{ oneDecimal (inKm $d.DistanceInMeters) }} km<small class="label">Distance</small></div>
           <div class="box_metric">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
           <div class="box_metric">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
           <div class="box_metric">{{ oneDecimal $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>

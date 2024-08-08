@@ -20,36 +20,12 @@ func Movement(events []repository.Event) (float64, bool) {
 	return OneDecimal(speed), lastEvent.Latitude != secondToLastEvent.Latitude || lastEvent.Longitude != secondToLastEvent.Longitude
 }
 
-// func Distance(days []Day) int64 {
-// 	var totalDistance int64
-// 	for _, d := range days {
-// 		totalDistance += int64(d.TotalDistance)
-// 	}
-// 	return totalDistance / 1000
-// }
-
 func Progress(distanceSoFar float64) float64 {
 	distanceInTotal := 3891.0
-	percentage := distanceSoFar / distanceInTotal * 100
+	percentage := (distanceSoFar / 1000) / distanceInTotal * 100
 
 	return OneDecimal(percentage)
 }
-
-// func Elevation(events []repository.Event) (int64, int64) {
-// 	var gain, loss int64
-// 	for _, d := range events {
-// 		gain += int64(d.Altitude)
-// 		loss += int64(d.ElevationLoss)
-// 	}
-// 	return gain, loss
-// }
-
-// func TimeMoving(events []repository.Event) int64 {
-// 	var time int64
-// 	for _, e := range events {
-// 	}
-// 	return time
-// }
 
 func RestingTime(elapsedDays int, movingTime int64) int64 {
 	return int64(elapsedDays)*24*60*60 - movingTime
@@ -153,7 +129,7 @@ func CalculateMovingTimeAndAverageSpeed(events []repository.Event, speedThreshol
 	return totalSeconds, averageSpeed * 3.6 * 1000 // km/h
 }
 
-func CalculateDistance(events []repository.Event) float64 {
+func DistanceInMeters(events []repository.Event) float64 {
 	if len(events) < 2 {
 		return 0
 	}
