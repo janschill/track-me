@@ -74,14 +74,14 @@ func (h *IndexHandler) GetIndex(w http.ResponseWriter, r *http.Request) {
 		lastEvent = events[len(events)-1]
 	}
 
-	ride := service.NewRide(events, days)
+	eventsJSON, _ := json.Marshal(events)
 
 	data := IndexPageData{
 		Messages:       messages,
 		LastEvent:      lastEvent,
 		Ride:           ride,
 		Days:           days,
-		DaysEventsJSON: template.JS(daysEventsJSON),
+		EventsJSON: template.JS(eventsJSON),
 	}
 
 	err = tmpl.Execute(w, data)

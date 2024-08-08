@@ -36,7 +36,7 @@ function setUpMap() {
   }).addTo(map);
   // Load traveled path
   // const events = serverData.EventsJSON
-  const events = serverData.DaysEventsJSON
+  const events = serverData.EventsJSON
   let path;
   if (events && events.length > 2) {
     const pathCoordinates = events.map(event => [event.Latitude, event.Longitude]);
@@ -154,4 +154,5 @@ document.addEventListener('DOMContentLoaded', function () {
   setUpMap()
   setUpForm()
   calculateLastPing()
+  updateMovingStatus()
 });
