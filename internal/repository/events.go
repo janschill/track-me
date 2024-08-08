@@ -75,7 +75,13 @@ func (r *EventRepository) Create(e Event) error {
 }
 
 func (r *EventRepository) All() ([]Event, error) {
-	rows, err := r.db.Query(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp FROM events ORDER BY timeStamp`)
+	rows, err := r.db.Query(`
+		SELECT id, messageCode, latitude, longitude, altitude, speed, course, gpsFix, timeStamp
+		FROM events
+		WHERE messageCode NOT IN (3, 14, 15, 16, 66, 67)
+		AND messageCode NOT BETWEEN 24 AND 63
+		ORDER BY timeStamp
+	`)
 	if err != nil {
 		log.Printf("Error querying events: %v", err)
 		return nil, err
@@ -86,7 +92,7 @@ func (r *EventRepository) All() ([]Event, error) {
 	for rows.Next() {
 		var e Event
 
-		err := rows.Scan(&e.ID, &e.Latitude, &e.Longitude, &e.Altitude, &e.Speed, &e.Course, &e.GpsFix, &e.TimeStamp)
+		err := rows.Scan(&e.ID, &e.MessageCode, &e.Latitude, &e.Longitude, &e.Altitude, &e.Speed, &e.Course, &e.GpsFix, &e.TimeStamp)
 		if err != nil {
 			log.Printf("Error scanning event row: %v", err)
 		}
@@ -101,7 +107,14 @@ func (r *EventRepository) All() ([]Event, error) {
 
 func (r *EventRepository) Last() (Event, error) {
 	var e Event
-	row := r.db.QueryRow(`SELECT id, latitude, longitude, altitude, speed, course, gpsFix, timeStamp FROM events ORDER BY timeStamp DESC LIMIT 1`)
+	row := r.db.QueryRow(`
+		SELECT id, messageCode, latitude, longitude, altitude, speed, course, gpsFix, timeStamp
+		FROM events
+		WHERE messageCode NOT IN (3, 14, 15, 16, 66, 67)
+		AND messageCode NOT BETWEEN 24 AND 63
+		ORDER BY timeStamp
+		DESC LIMIT 1
+	`)
 	err := row.Scan(&e.ID, &e.Latitude, &e.Longitude, &e.Altitude, &e.Speed, &e.Course, &e.GpsFix, &e.TimeStamp)
 	if err != nil {
 		log.Fatal(err)
