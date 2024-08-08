@@ -20,37 +20,36 @@ func Movement(events []repository.Event) (float64, bool) {
 	return OneDecimal(speed), lastEvent.Latitude != secondToLastEvent.Latitude || lastEvent.Longitude != secondToLastEvent.Longitude
 }
 
-func Distance(days []repository.Day, events []repository.Event) int64 {
-	var totalDistance int64
-	for _, d := range days {
-		totalDistance += int64(d.TotalDistance)
-	}
-	return totalDistance / 1000
-}
+// func Distance(days []Day) int64 {
+// 	var totalDistance int64
+// 	for _, d := range days {
+// 		totalDistance += int64(d.TotalDistance)
+// 	}
+// 	return totalDistance / 1000
+// }
 
-func Progress(distanceSoFar int64) float64 {
+func Progress(distanceSoFar float64) float64 {
 	distanceInTotal := 3891.0
-	percentage := float64(distanceSoFar) / distanceInTotal * 100
+	percentage := distanceSoFar / distanceInTotal * 100
 
 	return OneDecimal(percentage)
 }
 
-func Elevation(days []repository.Day, events []repository.Event) (int64, int64) {
-	var gain, loss int64
-	for _, d := range days {
-		gain += int64(d.ElevationGain)
-		loss += int64(d.ElevationLoss)
-	}
-	return gain, loss
-}
+// func Elevation(events []repository.Event) (int64, int64) {
+// 	var gain, loss int64
+// 	for _, d := range events {
+// 		gain += int64(d.Altitude)
+// 		loss += int64(d.ElevationLoss)
+// 	}
+// 	return gain, loss
+// }
 
-func TimeMoving(days []repository.Day, events []repository.Event) int64 {
-	var time int64
-	for _, d := range days {
-		time += int64(d.MovingTimeInSeconds)
-	}
-	return time
-}
+// func TimeMoving(events []repository.Event) int64 {
+// 	var time int64
+// 	for _, e := range events {
+// 	}
+// 	return time
+// }
 
 func RestingTime(elapsedDays int, movingTime int64) int64 {
 	return int64(elapsedDays)*24*60*60 - movingTime
@@ -227,12 +226,10 @@ func CalculateStops(events []repository.Event) (numberOfStops, totalStopTimeInSe
 	return numberOfStops, totalStopTimeInSeconds
 }
 
-// TODO:
 func CalculateMaxSpeed(events []repository.Event) (maxSpeed float64) {
+	maxSpeed = math.Inf(-1)
 	for i := 1; i < len(events); i++ {
-		distance := haversine(events[i-1].Latitude, events[i-1].Longitude, events[i].Latitude, events[i].Longitude)
-		timeDiff := time.Unix(events[i].TimeStamp, 0).Sub(time.Unix(events[i-1].TimeStamp, 0)).Seconds()
-		speed := (distance / timeDiff) * 3.6 * 1000 // Convert m/s to km/h
+		speed := events[i].Speed
 
 		if speed > maxSpeed {
 			maxSpeed = speed

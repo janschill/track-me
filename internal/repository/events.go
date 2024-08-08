@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"log"
+	"time"
 )
 
 type Event struct {
@@ -133,4 +134,10 @@ func (r *EventRepository) AllByDay(day string) ([]Event, error) {
 	}
 
 	return events, nil
+}
+
+func (r *EventRepository) Today() ([]Event, error) {
+	today := time.Now().Format("2006-01-02")
+	log.Printf("getting records from today: %v", today)
+	return r.AllByDay(today)
 }

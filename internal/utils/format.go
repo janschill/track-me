@@ -35,3 +35,12 @@ func WroteOnTime(ts int64) string {
 	t := time.Unix(ts, 0).UTC()
 	return t.Format("on 02 January at 15:04")
 }
+
+func OnDayFromString(dateStr string) (string, error) {
+	t, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return "", err
+	}
+
+	return t.Format("02 January"), nil
+}

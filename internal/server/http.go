@@ -13,18 +13,19 @@ import (
 	"github.com/janschill/track-me/internal/db"
 	"github.com/janschill/track-me/internal/handlers"
 	"github.com/janschill/track-me/internal/repository"
+	"github.com/janschill/track-me/internal/service"
 )
 
 var conf *config.Config
 
-func newHTTPHandler(repo *repository.Repository) http.Handler {
+func newHTTPHandler(repo *repository.Repository, dayService *service.DayService) http.Handler {
 	mux := http.NewServeMux()
 	sentryHandler := sentryhttp.New(sentryhttp.Options{})
 
 	fs := http.FileServer(http.Dir("web/assets/"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	mux.Handle("/", sentryHandler.Handle(http.HandlerFunc(handlers.NewIndexHandler(repo).GetIndex)))
+	mux.Handle("/", sentryHandler.Handle(http.HandlerFunc(handlers.NewIndexHandler(repo, dayService).GetIndex)))
 	mux.Handle("/messages", sentryHandler.Handle(http.HandlerFunc(handlers.NewMessageHandler(repo).CreateMessage)))
 	mux.Handle("/garmin-outbound", sentryHandler.Handle(http.HandlerFunc(handlers.NewGarminHandler(repo).CreateEvent)))
 
@@ -55,10 +56,11 @@ func HttpServer(addr string, ctx context.Context) *http.Server {
 		log.Fatal(err)
 	}
 	repo := repository.NewRepository(db)
+	dayService := service.NewDayService()
 
 	return &http.Server{
 		Addr:         ":" + addr,
-		Handler:      newHTTPHandler(repo),
+		Handler:      newHTTPHandler(repo, dayService),
 		BaseContext:  func(_ net.Listener) context.Context { return ctx },
 		ReadTimeout:  time.Second,
 		WriteTimeout: 10 * time.Second,
