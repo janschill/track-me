@@ -1,4 +1,4 @@
-package db
+package utils
 
 import (
 	"math"
@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"testing"
+
+	"github.com/janschill/track-me/internal/repository"
 )
 
 func walkTestFiles(t *testing.T, fileHandler func(path string, data GPXData)) {
@@ -15,7 +17,7 @@ func walkTestFiles(t *testing.T, fileHandler func(path string, data GPXData)) {
 			return err
 		}
 		if !info.IsDir() && filepath.Ext(path) == ".json" {
-			data, err := readGPXDataFromFile(path)
+			data, err := ReadGPXDataFromFile(path)
 			if err != nil {
 				t.Fatalf("Failed to read GPX data from file %s: %v", path, err)
 			}
@@ -28,19 +30,19 @@ func walkTestFiles(t *testing.T, fileHandler func(path string, data GPXData)) {
 	}
 }
 
-func TestCalculateDistance(t *testing.T) {
+func TestDistanceInMeters(t *testing.T) {
 	walkTestFiles(t, func(path string, data GPXData) {
 		expectedDistance, err := strconv.ParseFloat(data.Distance, 64)
 		if err != nil {
 			t.Fatalf("Failed to parse expected distance from file %s: %v", path, err)
 		}
 
-		events := convertPointsToEvents(data.Points)
-		result := CalculateDistance(events)
+		events := ConvertPointsToEvents(data.Points)
+		result := DistanceInMeters(events)
 		relativeThreshold := 0.05
 
 		if math.Abs(result-expectedDistance) > relativeThreshold*expectedDistance {
-			t.Errorf("CalculateDistance = %f; expected %f (file: %s)", result, expectedDistance, path)
+			t.Errorf("DistanceInMeters = %f; expected %f (file: %s)", result, expectedDistance, path)
 		}
 	})
 }
@@ -57,7 +59,7 @@ func TestCalculateMovingTimeAndAverageSpeed(t *testing.T) {
 			t.Fatalf("Failed to parse expected average speed from file %s: %v", path, err)
 		}
 
-		events := convertPointsToEvents(data.Points)
+		events := ConvertPointsToEvents(data.Points)
 		movingTime, averageSpeed := CalculateMovingTimeAndAverageSpeed(events, 0.001)
 		relativeThreshold := 0.05
 
@@ -74,14 +76,14 @@ func TestCalculateMovingTimeAndAverageSpeed(t *testing.T) {
 func TestCalculateAltitudes(t *testing.T) {
 	tests := []struct {
 		name           string
-		events         []Event
+		events         []repository.Event
 		expectedAvgAlt float64
 		expectedMaxAlt float64
 		expectedMinAlt float64
 	}{
 		{
 			name: "multiple events",
-			events: []Event{
+			events: []repository.Event{
 				{Altitude: 100},
 				{Altitude: 200},
 				{Altitude: 150},
@@ -92,7 +94,7 @@ func TestCalculateAltitudes(t *testing.T) {
 		},
 		{
 			name: "single event",
-			events: []Event{
+			events: []repository.Event{
 				{Altitude: 100},
 			},
 			expectedAvgAlt: 100,
@@ -101,7 +103,7 @@ func TestCalculateAltitudes(t *testing.T) {
 		},
 		{
 			name:           "no events",
-			events:         []Event{},
+			events:         []repository.Event{},
 			expectedAvgAlt: 0.0,
 			expectedMaxAlt: 0.0,
 			expectedMinAlt: 0.0,
@@ -127,13 +129,13 @@ func TestCalculateAltitudes(t *testing.T) {
 func TestCalculateElevationGainAndLoss(t *testing.T) {
 	tests := []struct {
 		name         string
-		events       []Event
+		events       []repository.Event
 		expectedGain int64
 		expectedLoss int64
 	}{
 		{
 			name: "multiple events with gain and loss",
-			events: []Event{
+			events: []repository.Event{
 				{Altitude: 100},
 				{Altitude: 200},
 				{Altitude: 150},
@@ -144,7 +146,7 @@ func TestCalculateElevationGainAndLoss(t *testing.T) {
 		},
 		{
 			name: "single event",
-			events: []Event{
+			events: []repository.Event{
 				{Altitude: 100},
 			},
 			expectedGain: 0,
@@ -152,13 +154,13 @@ func TestCalculateElevationGainAndLoss(t *testing.T) {
 		},
 		{
 			name:         "no events",
-			events:       []Event{},
+			events:       []repository.Event{},
 			expectedGain: 0,
 			expectedLoss: 0,
 		},
 		{
 			name: "all gain",
-			events: []Event{
+			events: []repository.Event{
 				{Altitude: 100},
 				{Altitude: 200},
 				{Altitude: 300},
@@ -168,7 +170,7 @@ func TestCalculateElevationGainAndLoss(t *testing.T) {
 		},
 		{
 			name: "all loss",
-			events: []Event{
+			events: []repository.Event{
 				{Altitude: 300},
 				{Altitude: 200},
 				{Altitude: 100},
@@ -194,13 +196,13 @@ func TestCalculateElevationGainAndLoss(t *testing.T) {
 func TestCalculateStops(t *testing.T) {
 	tests := []struct {
 		name                           string
-		events                         []Event
+		events                         []repository.Event
 		expectedNumberOfStops          int
 		expectedTotalStopTimeInSeconds int
 	}{
 		{
 			name: "multiple events with stops",
-			events: []Event{
+			events: []repository.Event{
 				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200},
 				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459260},
 				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459320},
@@ -211,7 +213,7 @@ func TestCalculateStops(t *testing.T) {
 		},
 		{
 			name: "no stops",
-			events: []Event{
+			events: []repository.Event{
 				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200},
 				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459260},
 				{Latitude: 40.7148, Longitude: -74.0070, TimeStamp: 1609459320},
@@ -237,12 +239,12 @@ func TestCalculateStops(t *testing.T) {
 func TestCalculateMaxSpeed(t *testing.T) {
 	tests := []struct {
 		name             string
-		events           []Event
+		events           []repository.Event
 		expectedMaxSpeed float64
 	}{
 		{
 			name: "multiple events with varying speeds",
-			events: []Event{
+			events: []repository.Event{
 				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200},
 				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459260},
 				{Latitude: 40.7148, Longitude: -74.0070, TimeStamp: 1609459320},
@@ -251,7 +253,7 @@ func TestCalculateMaxSpeed(t *testing.T) {
 		},
 		{
 			name: "constant speed",
-			events: []Event{
+			events: []repository.Event{
 				{Latitude: 40.7128, Longitude: -74.0060, TimeStamp: 1609459200},
 				{Latitude: 40.7138, Longitude: -74.0065, TimeStamp: 1609459260},
 				{Latitude: 40.7148, Longitude: -74.0070, TimeStamp: 1609459320},

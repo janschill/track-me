@@ -2,3 +2,4 @@ tmp
 data/
 trackme
 .env
+.DS_Store

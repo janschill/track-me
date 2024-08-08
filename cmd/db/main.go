@@ -41,11 +41,13 @@ func main() {
 	case "clear":
 		db.Clear(dbPath)
 	case "aggregate":
-		if day == "" {
-			fmt.Println("Usage: go run main.go -dbpath=<path-to-db> -operation=aggregate -day=<yyyy-mm-dd>")
-			os.Exit(1)
-		}
-		db.Aggregate(dbPath, day)
+		fmt.Println("TODO: not supported")
+		return
+		// if day == "" {
+		// 	fmt.Println("Usage: go run main.go -dbpath=<path-to-db> -operation=aggregate -day=<yyyy-mm-dd>")
+		// 	os.Exit(1)
+		// }
+		// db.Aggregate(dbPath, day)
 	default:
 		fmt.Println("Invalid operation. Available operations: init, create, setup, reset.")
 	}

@@ -41,12 +41,7 @@
       <article class="block col-2">
         <section class="row">
           <div class="col">
-            {{ if .Ride.IsMoving }}
-            Yes
-            {{ else }}
-            No
-            {{ end }}
-            <small class="label">Currently Moving</small>
+            <div id="isMoving"></div><small class="label">Currently Moving</small>
           </div>
           <div class="col">
             <div id="lastPing"></div><small class="label">Last Signal</small>
@@ -55,7 +50,7 @@
         <section class="row">
           <div class="col">
             {{ if .Ride.Distance }}
-            {{ .Ride.Distance }} km
+            {{ oneDecimal (inKm .Ride.Distance) }} km
             {{ else }}
             N/A
             {{ end }}
@@ -178,13 +173,13 @@
       <li class="box">
         <header class="box__header">
           <h3 class="box__title">{{ addOne $i }}</h3>
-          <small class="box__subtitle">{{ onDay $d.TimeStamp }}</small>
+          <small class="box__subtitle">{{  onDayFromString $d.Date }}</small>
         </header>
         <section class="row row-flex">
-          <div class="box_metric">{{ oneDecimal (inKm $d.TotalDistance) }} km<small class="label">Distance</small></div>
+          <div class="box_metric">{{ oneDecimal (inKm $d.DistanceInMeters) }} km<small class="label">Distance</small></div>
           <div class="box_metric">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
           <div class="box_metric">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
-          <div class="box_metric">{{ $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>
+          <div class="box_metric">{{ oneDecimal $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>
           <div class="box_metric">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
         </section>
       </li>

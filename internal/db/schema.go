@@ -52,27 +52,6 @@ var schema = Schema{
 			);`,
 		},
 		{
-			Name: "events_cache",
-			Definition: `CREATE TABLE IF NOT EXISTS events_cache (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			points TEXT NOT NULL,
-			tripId INTEGER NOT NULL,
-			averageSpeed REAL,
-			maxSpeed REAL,
-			minSpeed REAL,
-			totalDistanceInMeters INTEGER,
-			elevationGain INTEGER,
-			elevationLoss INTEGER,
-			averageAltitude REAL,
-			maxAltitude REAL,
-			minAltitude REAL,
-			movingTimeInSeconds INTEGER,
-			numberOfStops INTEGER,
-			totalStopTimeInSeconds INTEGER,
-			timeStamp INTEGER NOT NULL
-			);`,
-		},
-		{
 			Name: "messages",
 			Definition: `CREATE TABLE IF NOT EXISTS messages (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,

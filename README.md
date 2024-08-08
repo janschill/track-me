@@ -36,6 +36,32 @@ go install github.com/air-verse/air@latest
 echo "alias air=$(go env GOPATH)" >> ~/.zshrc
 ```
 
+### Debugging
+
+```sh
+go install -v github.com/go-delve/delve/cmd/dlv@latest
+```
+
+Example launch config for running a debugger in VSCode.
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "./cmd/server/main.go",
+      "env": {},
+      "args": [],
+      "cwd": "${workspaceRoot}"
+    }
+  ]
+}
+```
+
 ## References
 
 - [Organising Database Access in Go](https://www.alexedwards.net/blog/organising-database-access)

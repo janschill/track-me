@@ -1,11 +1,37 @@
-package db
+package utils
 
 import (
 	"math"
 	"time"
+
+	"github.com/janschill/track-me/internal/repository"
 )
 
-func perpendicularDistance(event, lineStart, lineEnd Event) float64 {
+func Movement(events []repository.Event) (float64, bool) {
+	eventCount := len(events)
+	if eventCount < 2 {
+		return 0, false
+	}
+
+	secondToLastEvent := events[eventCount-2]
+	lastEvent := events[eventCount-1]
+	speed := CalculateSpeed(secondToLastEvent, lastEvent) * 3.6 * 1000
+
+	return OneDecimal(speed), lastEvent.Latitude != secondToLastEvent.Latitude || lastEvent.Longitude != secondToLastEvent.Longitude
+}
+
+func Progress(distanceSoFar float64) float64 {
+	distanceInTotal := 3891.0
+	percentage := (distanceSoFar / 1000) / distanceInTotal * 100
+
+	return OneDecimal(percentage)
+}
+
+func RestingTime(elapsedDays int, movingTime int64) int64 {
+	return int64(elapsedDays)*24*60*60 - movingTime
+}
+
+func perpendicularDistance(event, lineStart, lineEnd repository.Event) float64 {
 	if lineStart.Latitude == lineEnd.Latitude && lineStart.Longitude == lineEnd.Longitude {
 		return math.Sqrt(math.Pow(event.Latitude-lineStart.Latitude, 2) + math.Pow(event.Longitude-lineStart.Longitude, 2))
 	}
@@ -43,7 +69,7 @@ func haversine(lat1, lon1, lat2, lon2 float64) (km float64) {
 
 // Ramer–Douglas–Peucker algorithm
 // Used to decimate a curve composed of line segments to a similar curve with fewer points
-func Rdp(events []Event, epsilon float64) []Event {
+func Rdp(events []repository.Event, epsilon float64) []repository.Event {
 	if len(events) < 3 {
 		return events
 	}
@@ -67,12 +93,12 @@ func Rdp(events []Event, epsilon float64) []Event {
 		return append(recResults1[:len(recResults1)-1], recResults2...)
 	}
 
-	return []Event{events[0], events[end]}
+	return []repository.Event{events[0], events[end]}
 }
 
 // m/s
 // to get km/h: * 3.6
-func CalculateSpeed(event1, event2 Event) float64 {
+func CalculateSpeed(event1, event2 repository.Event) float64 {
 	distance := haversine(event1.Latitude, event1.Longitude, event2.Latitude, event2.Longitude)
 	timeDiff := time.Unix(event2.TimeStamp, 0).Sub(time.Unix(event1.TimeStamp, 0)).Seconds()
 	if timeDiff == 0 {
@@ -83,7 +109,7 @@ func CalculateSpeed(event1, event2 Event) float64 {
 
 // movingTime in Seconds
 // averageSpeed in km/h
-func CalculateMovingTimeAndAverageSpeed(events []Event, speedThreshold float64) (float64, float64) {
+func CalculateMovingTimeAndAverageSpeed(events []repository.Event, speedThreshold float64) (float64, float64) {
 	var totalKms float64
 	var totalSeconds float64
 
@@ -103,7 +129,7 @@ func CalculateMovingTimeAndAverageSpeed(events []Event, speedThreshold float64) 
 	return totalSeconds, averageSpeed * 3.6 * 1000 // km/h
 }
 
-func CalculateDistance(events []Event) float64 {
+func DistanceInMeters(events []repository.Event) float64 {
 	if len(events) < 2 {
 		return 0
 	}
@@ -116,7 +142,7 @@ func CalculateDistance(events []Event) float64 {
 	return kms * 1000 // return in meters
 }
 
-func CalculateAltitudes(events []Event) (averageAltitude, maxAltitude, minAltitude float64) {
+func CalculateAltitudes(events []repository.Event) (averageAltitude, maxAltitude, minAltitude float64) {
 	if len(events) < 1 {
 		return 0, 0, 0
 	}
@@ -135,7 +161,7 @@ func CalculateAltitudes(events []Event) (averageAltitude, maxAltitude, minAltitu
 	return averageAltitude, maxAltitude, minAltitude
 }
 
-func CalculateElevationGainAndLoss(events []Event) (elevationGain, elevationLoss int64) {
+func CalculateElevationGainAndLoss(events []repository.Event) (elevationGain, elevationLoss int64) {
 	if len(events) < 2 {
 		return 0, 0
 	}
@@ -152,7 +178,7 @@ func CalculateElevationGainAndLoss(events []Event) (elevationGain, elevationLoss
 }
 
 // TODO:
-func CalculateStops(events []Event) (numberOfStops, totalStopTimeInSeconds int) {
+func CalculateStops(events []repository.Event) (numberOfStops, totalStopTimeInSeconds int) {
 	if len(events) < 2 {
 		return 0, 0
 	}
@@ -176,12 +202,10 @@ func CalculateStops(events []Event) (numberOfStops, totalStopTimeInSeconds int) 
 	return numberOfStops, totalStopTimeInSeconds
 }
 
-// TODO:
-func CalculateMaxSpeed(events []Event) (maxSpeed float64) {
+func CalculateMaxSpeed(events []repository.Event) (maxSpeed float64) {
+	maxSpeed = math.Inf(-1)
 	for i := 1; i < len(events); i++ {
-		distance := haversine(events[i-1].Latitude, events[i-1].Longitude, events[i].Latitude, events[i].Longitude)
-		timeDiff := time.Unix(events[i].TimeStamp, 0).Sub(time.Unix(events[i-1].TimeStamp, 0)).Seconds()
-		speed := (distance / timeDiff) * 3.6 * 1000 // Convert m/s to km/h
+		speed := events[i].Speed
 
 		if speed > maxSpeed {
 			maxSpeed = speed
