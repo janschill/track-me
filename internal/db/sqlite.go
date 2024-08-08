@@ -72,7 +72,7 @@ func Seed(filePath string) {
 		return
 	}
 	defer Db.Close()
-	path := "./internal/db/test_data/Great_Divide_2024.json"
+	path := "./data/Great_Divide_2024.json"
 
 	data, err := utils.ReadGPXDataFromFile(path)
 	if err != nil {
