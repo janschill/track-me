@@ -27,13 +27,12 @@ type Day struct {
 }
 
 type Ride struct {
-	LastPing      int64
 	Distance      float64
 	Progress      float64
 	ElevationGain int64
 	ElevationLoss int64
-	MovingTime    string
-	RestingTime   string
+	MovingTime    int64
+	RestingTime   int64
 	ElapsedDays   int
 	RemainingDays int
 }
@@ -53,6 +52,7 @@ func (s *DayService) calculateDayStats(date string, events []repository.Event) D
 	gain, loss := utils.CalculateElevationGainAndLoss(events)
 	averageAltitude, maxAltitude, minAltitude := utils.CalculateAltitudes(events)
 	// maxSpeed := utils.CalculateMaxSpeed(events)
+	// numberOfStops, stopTime := utils.CalculateStops(events)
 
 	return Day{
 		Date:                   date,
@@ -70,14 +70,18 @@ func (s *DayService) calculateDayStats(date string, events []repository.Event) D
 	}
 }
 
+func updateRideStats(ride *Ride, day Day) {
+	ride.Distance += day.DistanceInMeters
+	ride.ElevationGain += day.ElevationGain
+	ride.ElevationLoss += day.ElevationLoss
+	ride.MovingTime += day.MovingTimeInSeconds
+}
+
 func (s *DayService) GetDays(events []repository.Event) ([]Day, Ride) {
 	currentDate := time.Now().Format("2006-01-02")
 	eventsByDay := make(map[string][]repository.Event)
 
-	var totalDistance float64
-	var totalElevationGain, totalElevationLoss, totalMovingTime, totalNumberOfStops, totalStopTimeInSeconds int64
-	var totalAverageSpeed, totalAverageAltitude float64
-	var maxAltitude, minAltitude float64
+	var ride Ride
 
 	for _, event := range events {
 		date := time.Unix(event.TimeStamp, 0).Format("2006-01-02")
@@ -99,7 +103,8 @@ func (s *DayService) GetDays(events []repository.Event) ([]Day, Ride) {
 				log.Printf("Cache hit for %v", date)
 				if len(events) == len(eventsByDay[date]) {
 					days = append(days, day)
-					continue
+					updateRideStats(&ride, day)
+					continue // jump to next element in loop
 				}
 				// Bust the cache if new events are detected
 				delete(s.daysCache, date)
@@ -109,36 +114,16 @@ func (s *DayService) GetDays(events []repository.Event) ([]Day, Ride) {
 			days = append(days, day)
 		}
 
-		totalDistance += day.DistanceInMeters
-		totalElevationGain += day.ElevationGain
-		totalElevationLoss += day.ElevationLoss
-		totalMovingTime += day.MovingTimeInSeconds
-		totalNumberOfStops += day.NumberOfStops
-		totalStopTimeInSeconds += day.TotalStopTimeInSeconds
-		totalAverageSpeed += day.AverageSpeed
-		totalAverageAltitude += day.AverageAltitude
-		if day.MaxAltitude > maxAltitude {
-			maxAltitude = day.MaxAltitude
-		}
-		if minAltitude == 0 || day.MinAltitude < minAltitude {
-			minAltitude = day.MinAltitude
-		}
+		updateRideStats(&ride, day)
 	}
 
-	movingTimeFormatted := utils.FormatTime(totalMovingTime)
-	restingTimeFormatted := utils.FormatTime(utils.RestingTime(len(days), totalMovingTime))
-
+	// Sort days by date
 	slices.SortFunc(days, func(a, b Day) int { return cmp.Compare(a.Date, b.Date) })
 
-	return days, Ride{
-		LastPing:      0,
-		Distance:      totalDistance,
-		Progress:      utils.Progress(totalDistance),
-		ElevationGain: totalElevationGain,
-		ElevationLoss: totalElevationLoss,
-		MovingTime:    movingTimeFormatted,
-		RestingTime:   restingTimeFormatted,
-		ElapsedDays:   len(days),
-		RemainingDays: int(math.Max(0, float64(30-len(days)))), // just making sure we are not going under 0
-	}
+	ride.RestingTime = utils.RestingTime(len(days), ride.MovingTime)
+	ride.Progress = utils.Progress(ride.Distance)
+	ride.ElapsedDays = len(days)
+	ride.RemainingDays = int(math.Max(0, float64(30-ride.ElapsedDays)))
+
+	return days, ride
 }

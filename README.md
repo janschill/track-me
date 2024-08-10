@@ -5,7 +5,15 @@
 - Professional Garmin Explore Plan needed
 - inReach Mini 2
 
-## Stack
+## Architecture
+
+Everything is served on the `/` path. The Garmin Outbound webhook is continously pushing new events from the Garmin InReach Mini 2 to `/garmin-outbound`, which will save all incoming events to a SQLite database.
+When visiting `/` all events are queried from the DB and used to plot a traveled path on a Leaflet map. The home page also shows overall Ride stats and a breakdown of days.
+The Ride and Days show different stats such as distance traveled, elevation, time moving etc. these are calculated from the events.
+All past days are cached in memory. The current day is always computed newly. The Ride stats will use the cached days and the events for the current day.
+Messages from visitors are stored in a messages table. Events from the Garmin that have a message will be stored in events, but also parsed to the message struct and stored in the messages table. This allows to render all messages in a list. The messages from Garmin are shown as "Automated Messages".
+
+### Stack
 
 - go
 - SQLite
@@ -25,6 +33,13 @@ The Outbound services send periodically (10 minutes) HTTP POST requests to your 
 ### API
 
 >The Garmin data push service requires end users to setup a web service to handle incoming HTTP-POST requests from the Garmin gateway.
+
+## Deployment
+
+1. GitHub Actions will build the binary using Docker
+2. The SCP action will copy the binary and assets from web/ to a tmp directory on the server
+3. The SSH action will connect with the server and do a ping test on the binary and then replace the binary and assets in the track-me directory
+4. The systemctl will then restart and use the new binary and assets to start the application
 
 ## Development
 

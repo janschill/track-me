@@ -97,7 +97,7 @@
         <section class="row">
           <div class="col">
             {{ if .Ride.MovingTime }}
-            {{ .Ride.MovingTime }}
+            {{ time .Ride.MovingTime }}
             {{ else }}
             N/A
             {{ end }}
@@ -105,7 +105,7 @@
           </div>
           <div class="col">
             {{ if .Ride.RestingTime }}
-            {{ .Ride.RestingTime }}
+            {{ time .Ride.RestingTime }}
             {{ else }}
             N/A
             {{ end }}
