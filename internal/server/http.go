@@ -27,6 +27,7 @@ func newHTTPHandler(repo *repository.Repository, dayService *service.DayService)
 
 	mux.Handle("/", sentryHandler.Handle(http.HandlerFunc(handlers.NewIndexHandler(repo, dayService).GetIndex)))
 	mux.Handle("/messages", sentryHandler.Handle(http.HandlerFunc(handlers.NewMessageHandler(repo).CreateMessage)))
+	mux.Handle("/garmin-outbound", sentryHandler.Handle(http.HandlerFunc(handlers.NewGarminHandler(repo).CreateOutboundEvent)))
 	mux.Handle("/photos", sentryHandler.Handle(http.HandlerFunc(handlers.NewICloudHandler().Photos)))
 
 	return mux

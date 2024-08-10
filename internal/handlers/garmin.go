@@ -96,7 +96,7 @@ func (h *GarminHandler) prepareAndSave(payload GarminOutboundPayload) error {
 	return nil
 }
 
-func (h *GarminHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
+func (h *GarminHandler) CreateOutboundEvent(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method is not supported.", http.StatusMethodNotAllowed)
 		return

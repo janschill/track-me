@@ -109,9 +109,10 @@ func CalculateSpeed(event1, event2 repository.Event) float64 {
 
 // movingTime in Seconds
 // averageSpeed in km/h
-func CalculateMovingTimeAndAverageSpeed(events []repository.Event, speedThreshold float64) (float64, float64) {
+func CalculateMovingTimeAndAverageSpeed(events []repository.Event, speedThreshold float64) (float64, float64, float64) {
 	var totalKms float64
 	var totalSeconds float64
+	maxSpeed := math.Inf(-1)
 
 	for i := 1; i < len(events); i++ {
 		speed := CalculateSpeed(events[i-1], events[i])
@@ -119,14 +120,17 @@ func CalculateMovingTimeAndAverageSpeed(events []repository.Event, speedThreshol
 			totalKms += haversine(events[i-1].Latitude, events[i-1].Longitude, events[i].Latitude, events[i].Longitude)
 			totalSeconds += time.Unix(events[i].TimeStamp, 0).Sub(time.Unix(events[i-1].TimeStamp, 0)).Seconds()
 		}
+		if speed > maxSpeed {
+			maxSpeed = speed
+		}
 	}
 
 	if totalSeconds == 0 {
-		return 0, 0
+		return 0, 0, 0
 	}
 
 	averageSpeed := totalKms / totalSeconds
-	return totalSeconds, averageSpeed * 3.6 * 1000 // km/h
+	return totalSeconds, averageSpeed * 3.6 * 1000, maxSpeed // km/h
 }
 
 func DistanceInMeters(events []repository.Event) float64 {

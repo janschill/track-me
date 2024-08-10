@@ -49,10 +49,10 @@ func NewDayService() *DayService {
 }
 
 func (s *DayService) calculateDayStats(date string, events []repository.Event) Day {
-	movingTime, averageSpeed := utils.CalculateMovingTimeAndAverageSpeed(events, 0.001)
+	movingTime, averageSpeed, maxSpeed := utils.CalculateMovingTimeAndAverageSpeed(events, 0.001)
 	gain, loss := utils.CalculateElevationGainAndLoss(events)
 	averageAltitude, maxAltitude, minAltitude := utils.CalculateAltitudes(events)
-	maxSpeed := utils.CalculateMaxSpeed(events)
+	// maxSpeed := utils.CalculateMaxSpeed(events)
 
 	return Day{
 		Date:                   date,
