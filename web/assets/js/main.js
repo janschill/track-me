@@ -191,38 +191,51 @@ function displayImages(photosByDate) {
   const daysContainer = document.querySelectorAll('.days-container ol li');
 
   if (!daysContainer.length) {
+    console.error('No days container found.');
     return;
   }
-
+  console.log('daysContainer:', daysContainer);
   for (const date in photosByDate) {
     const photos = photosByDate[date];
-
+    console.log(`Processing date: ${date}, photos:`, photos);
     for (const photo of photos) {
-      const thumbnail = photo.derivatives[342].mediaUrl
-      const highResUrl = photo.derivatives[2049].mediaUrl
+      const derivativeKeys = Object.keys(photo.derivatives).map(Number);
+      const smallKey = Math.min(...derivativeKeys);
+      const largeKey = Math.max(...derivativeKeys);
+
+      const thumbnail = photo.derivatives[smallKey].mediaUrl;
+      const highResUrl = photo.derivatives[largeKey].mediaUrl;
 
       const img = document.createElement('img');
       img.src = thumbnail;
       img.className = 'thumbnail';
       img.dataset.highResUrl = highResUrl;
       img.addEventListener('click', showHighResImage);
-
+      let dateFound = false;
       daysContainer.forEach(day => {
         const dayDate = day.querySelector('.day-date').value;
         if (dayDate === date) {
+          dateFound = true;
           const photosContainer = day.querySelector('.photos');
           if (photosContainer) {
+            console.log(`Appended photo to date: ${date}`);
             photosContainer.appendChild(img);
+          } else {
+            console.error(`No photos container found for date: ${date}`);
           }
         }
       });
+      if (!dateFound) {
+        console.error(`No matching day found for date: ${date}`);
+      }
     }
   }
 }
 
 async function getPhotos() {
   const response = await fetch("/photos")
-  return await response.json()
+  const photos = await response.json()
+  return photos
 }
 
 function groupByDate(photos) {
