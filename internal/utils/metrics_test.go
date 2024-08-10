@@ -60,7 +60,7 @@ func TestCalculateMovingTimeAndAverageSpeed(t *testing.T) {
 		}
 
 		events := ConvertPointsToEvents(data.Points)
-		movingTime, averageSpeed, maxSpeed := CalculateMovingTimeAndAverageSpeed(events, 0.001)
+		movingTime, averageSpeed, _ := CalculateMovingTimeAndAverageSpeed(events, 0.001)
 		relativeThreshold := 0.05
 
 		if math.Abs(movingTime-expectedMovingTime) > relativeThreshold*expectedMovingTime {
