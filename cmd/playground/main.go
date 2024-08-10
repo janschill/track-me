@@ -1,13 +1,5 @@
 package main
 
-import (
-	"html/template"
-	"log"
-	"strings"
-
-	"github.com/janschill/track-me/internal/db"
-)
-
 
 type DayEvent struct {
 	ID           int64  `json:"ID"`
@@ -31,24 +23,24 @@ type DayEvent struct {
 	Speed        int     `json:"Speed"`
 }
 
-var days []db.Day = []db.Day{
-	db.Day{
-		Points: `[{"ID":4536,"TripID":0,"Imei":"","MessageCode":0,"FreeText":"","TimeStamp":1726012577,"Addresses":null,"Status":{"Autonomous":0,"LowBattery":0,"IntervalChange":0,"ResetDetected":0},"Latitude":47.499658,"Longitude":-113.783468,"Altitude":1244,"GpsFix":0,"Course":0,"Speed":0},{"ID":4539,"TripID":0,"Imei":"","MessageCode":0,"FreeText":"","TimeStamp":1726012748,"Addresses":null,"Status":{"Autonomous":0,"LowBattery":0,"IntervalChange":0,"ResetDetected":0},"Latitude":47.500389,"Longitude":-113.780864,"Altitude":1232,"GpsFix":0,"Course":0,"Speed":0}]`,
-	},
-	db.Day{
-		Points: `[{"ID":5536,"TripID":0,"Imei":"","MessageCode":0,"FreeText":"","TimeStamp":1726012577,"Addresses":null,"Status":{"Autonomous":0,"LowBattery":0,"IntervalChange":0,"ResetDetected":0},"Latitude":47.499658,"Longitude":-113.783468,"Altitude":1244,"GpsFix":0,"Course":0,"Speed":0},{"ID":5539,"TripID":0,"Imei":"","MessageCode":0,"FreeText":"","TimeStamp":1726012748,"Addresses":null,"Status":{"Autonomous":0,"LowBattery":0,"IntervalChange":0,"ResetDetected":0},"Latitude":47.500389,"Longitude":-113.780864,"Altitude":1232,"GpsFix":0,"Course":0,"Speed":0}]`,
-	},
-}
+// var days []service.Day = []service.Day{
+// 	service.Day{
+// 		Points: `[{"ID":4536,"TripID":0,"Imei":"","MessageCode":0,"FreeText":"","TimeStamp":1726012577,"Addresses":null,"Status":{"Autonomous":0,"LowBattery":0,"IntervalChange":0,"ResetDetected":0},"Latitude":47.499658,"Longitude":-113.783468,"Altitude":1244,"GpsFix":0,"Course":0,"Speed":0},{"ID":4539,"TripID":0,"Imei":"","MessageCode":0,"FreeText":"","TimeStamp":1726012748,"Addresses":null,"Status":{"Autonomous":0,"LowBattery":0,"IntervalChange":0,"ResetDetected":0},"Latitude":47.500389,"Longitude":-113.780864,"Altitude":1232,"GpsFix":0,"Course":0,"Speed":0}]`,
+// 	},
+// 	service.Day{
+// 		Points: `[{"ID":5536,"TripID":0,"Imei":"","MessageCode":0,"FreeText":"","TimeStamp":1726012577,"Addresses":null,"Status":{"Autonomous":0,"LowBattery":0,"IntervalChange":0,"ResetDetected":0},"Latitude":47.499658,"Longitude":-113.783468,"Altitude":1244,"GpsFix":0,"Course":0,"Speed":0},{"ID":5539,"TripID":0,"Imei":"","MessageCode":0,"FreeText":"","TimeStamp":1726012748,"Addresses":null,"Status":{"Autonomous":0,"LowBattery":0,"IntervalChange":0,"ResetDetected":0},"Latitude":47.500389,"Longitude":-113.780864,"Altitude":1232,"GpsFix":0,"Course":0,"Speed":0}]`,
+// 	},
+// }
 
 
 func main() {
-	var combinedPoints []string
-	for _, day := range days {
-			// Remove the leading '[' and trailing ']' from each Points string
-			trimmedPoints := strings.Trim(day.Points, "[]")
-			combinedPoints = append(combinedPoints, trimmedPoints)
-	}
-	    finalJSONArrayString := "[" + strings.Join(combinedPoints, ",") + "]"
+	// var combinedPoints []string
+	// for _, day := range days {
+	// 		// Remove the leading '[' and trailing ']' from each Points string
+	// 		trimmedPoints := strings.Trim(day.Points, "[]")
+	// 		combinedPoints = append(combinedPoints, trimmedPoints)
+	// }
+	//     finalJSONArrayString := "[" + strings.Join(combinedPoints, ",") + "]"
 
-	log.Printf("day: %v", template.JS(finalJSONArrayString))
+	// log.Printf("day: %v", template.JS(finalJSONArrayString))
 }
