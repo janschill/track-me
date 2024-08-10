@@ -64,5 +64,13 @@ var schema = Schema{
 			FOREIGN KEY(tripId) REFERENCES trips(id)
 			);`,
 		},
+		{
+			Name: "kudos",
+			Definition: `CREATE TABLE IF NOT EXISTS kudos (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			day TEXT NOT NULL UNIQUE,
+			count INTEGER DEFAULT 0
+			);`,
+		},
 	},
 }

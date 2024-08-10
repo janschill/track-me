@@ -43,7 +43,6 @@ func (r *MessageRepository) Create(m Message) error {
 	return tx.Commit()
 }
 
-
 func (r *MessageRepository) All() ([]Message, error) {
 	rows, err := r.db.Query(`SELECT id, tripId, message, name, timeStamp, sentToGarmin, fromGarmin FROM messages ORDER BY timeStamp DESC`)
 	if err != nil {

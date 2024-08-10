@@ -24,6 +24,7 @@ type Day struct {
 	MovingTimeInSeconds    int64
 	NumberOfStops          int64
 	TotalStopTimeInSeconds int64
+	KudosCount             int
 }
 
 type Ride struct {

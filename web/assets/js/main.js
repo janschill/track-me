@@ -1,3 +1,14 @@
+function lockKudosButtons() {
+  const kudosButtons = document.querySelectorAll('.kudos-button');
+  kudosButtons.forEach(button => {
+    const day = button.getAttribute('onclick').match(/'([^']+)'/)[1];
+    const kudosKey = `kudos_${day}`;
+    if (localStorage.getItem(kudosKey)) {
+      button.classList.add('kudos-button--clicked');
+    }
+  });
+}
+
 function appendMessage(data) {
   const messagesList = document.getElementById('messagesList');
 
@@ -194,10 +205,8 @@ function displayImages(photosByDate) {
     console.error('No days container found.');
     return;
   }
-  console.log('daysContainer:', daysContainer);
   for (const date in photosByDate) {
     const photos = photosByDate[date];
-    console.log(`Processing date: ${date}, photos:`, photos);
     for (const photo of photos) {
       const derivativeKeys = Object.keys(photo.derivatives).map(Number);
       const smallKey = Math.min(...derivativeKeys);
@@ -218,7 +227,6 @@ function displayImages(photosByDate) {
           dateFound = true;
           const photosContainer = day.querySelector('.photos');
           if (photosContainer) {
-            console.log(`Appended photo to date: ${date}`);
             photosContainer.appendChild(img);
           } else {
             console.error(`No photos container found for date: ${date}`);
@@ -252,6 +260,34 @@ function groupByDate(photos) {
   return photosByDate;
 }
 
+async function sendKudos(day) {
+  const kudosKey = `kudos_${day}`;
+  if (localStorage.getItem(kudosKey)) {
+    return;
+  }
+  const response = await fetch('/kudos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ day: day })
+  })
+  if (response.ok) {
+    document.getElementById(`kudos-button-${day}`).classList.add('kudos-button--clicked');
+    localStorage.setItem(kudosKey, 'true');
+    const kudosCountElement = document.getElementById(`kudos-count-${day}`);
+    const kudosCountValue = document.getElementById(`kudos-count-${day}-value`);
+    if (kudosCountValue) {
+      let count = parseInt(kudosCountValue.innerText)
+      console.log(count)
+      count++
+      kudosCountValue.innerText = count
+    } else {
+      kudosCountElement.innerText = '1 kudos'
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
   setUpMap()
   setUpForm()
@@ -259,4 +295,5 @@ document.addEventListener('DOMContentLoaded', async function () {
   updateMovingStatus()
   const photos = await getPhotos()
   displayImages(groupByDate(photos))
+  lockKudosButtons()
 });

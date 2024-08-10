@@ -4,6 +4,7 @@
   --primary-color-bright: #ea5331;
   --secondary-color: #efefef;
   --background-color: #f8f9fa;
+  --button-color: #e4e4e4;
   --text-color: #4f4f4f;
   --text-secondary-color: #505050;
   --font-family: 'Helvetica', Tahoma, Geneva, Verdana, sans-serif;
@@ -209,10 +210,21 @@ p {
   border: 1px solid var(--primary-color);
 }
 
-.box__header {
+.box__header .left {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+}
+
+.box__header .right {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.box__header {
+  display: flex;
+  justify-content: space-between;
 }
 
 .box__header--baseline {
@@ -295,4 +307,32 @@ p {
   position: absolute;
   top: 20px;
   right: 20px;
+}
+
+.kudos-button {
+  border: none;
+  cursor: pointer;
+  padding: 0 5px;
+  background-color: var(--button-color);
+}
+
+.kudos-button:hover path {
+  fill: var(--primary-color);
+}
+
+.kudos-button--clicked {
+  cursor: default
+}
+
+.kudos-button--clicked path {
+  fill: var(--primary-color);
+}
+
+.kudos-button--clicked:hover {
+  background-color: var(--button-color);
+}
+
+.kudos-symbol {
+  height: 20px;
+  margin-top: 2px;
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/janschill/track-me/internal/repository"
 )
 
 func OneDecimal(num float64) float64 {
@@ -43,4 +45,13 @@ func OnDayFromString(dateStr string) (string, error) {
 	}
 
 	return t.Format("02 January"), nil
+}
+
+func FindKudos(kudos []repository.Kudos, day string) int {
+	for _, k := range kudos {
+		if k.Day == day {
+			return k.Count
+		}
+	}
+	return 0
 }

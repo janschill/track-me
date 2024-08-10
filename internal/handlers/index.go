@@ -17,6 +17,7 @@ type IndexHandler struct {
 }
 
 type IndexPageData struct {
+	Kudos      []repository.Kudos
 	Messages   []repository.Message
 	LastEvent  repository.Event
 	Ride       service.Ride
@@ -40,6 +41,7 @@ func (h *IndexHandler) GetIndex(w http.ResponseWriter, r *http.Request) {
 		"oneDecimal":      utils.OneDecimal,
 		"inKm":            utils.InKm,
 		"addOne":          func(i int) int { return i + 1 },
+		"findKudos":       utils.FindKudos,
 	}
 	tmpl := template.Must(template.New("layout.html").Funcs(funcMap).ParseFiles("web/templates/layout.html", "web/templates/index.html"))
 
@@ -68,8 +70,18 @@ func (h *IndexHandler) GetIndex(w http.ResponseWriter, r *http.Request) {
 
 	eventsJSON, _ := json.Marshal(events)
 
+	kudos, err := h.repo.Kudos.All()
+	if err != nil {
+		log.Printf("Error retrieving kudos: %v", err)
+	}
+
+	for i := range days {
+		days[i].KudosCount = utils.FindKudos(kudos, days[i].Date)
+	}
+
 	data := IndexPageData{
 		Messages:   messages,
+		Kudos:      kudos,
 		LastEvent:  lastEvent,
 		Ride:       ride,
 		Days:       days,
