@@ -142,7 +142,8 @@
       <label hidden for="name">Name:</label>
       <input class="text-box" required type="text" id="name" name="name" placeholder="Your name"><br>
       <label hidden for="message">Message:</label>
-      <textarea class="text-box" rows="4" required minlength="2" maxlength="160" type="text" id="message" name="message" placeholder="Write a message..."></textarea><br>
+      <textarea class="text-box" rows="4" required minlength="2" maxlength="160" type="text" id="message" name="message"
+        placeholder="Write a message..."></textarea><br>
       <div class="flex">
         <div>
           <input type="checkbox" id="sentToGarmin" name="sentToGarmin" value="true">
@@ -170,23 +171,28 @@
     <h2>Days</h2>
     <ol>
       {{ range $i, $d := .Days }}
-      <li class="box">
-        <header class="box__header">
-          <h3 class="box__title">{{ addOne $i }}</h3>
-          <small class="box__subtitle">{{  onDayFromString $d.Date }}</small>
-        </header>
-        <section class="row row-flex">
-          <div class="box_metric">{{ oneDecimal (inKm $d.DistanceInMeters) }} km<small class="label">Distance</small></div>
-          <div class="box_metric">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
-          <div class="box_metric">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
-          <div class="box_metric">{{ oneDecimal $d.AverageAltitude }} m<small class="label">Average Altitude</small></div>
-          <div class="box_metric">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
-        </section>
+      <li class="list-item">
+        <input type="hidden" class="day-date" value="{{ $d.Date }}">
+        <div class="box">
+          <header class="box__header">
+            <h3 class="box__title">{{ addOne $i }}</h3>
+            <small class="box__subtitle">{{ onDayFromString $d.Date }}</small>
+          </header>
+          <section class="row row-flex">
+            <div class="box_metric">{{ oneDecimal (inKm $d.DistanceInMeters) }} km<small class="label">Distance</small>
+            </div>
+            <div class="box_metric">{{ oneDecimal $d.AverageSpeed }} km/h<small class="label">Speed</small></div>
+            <div class="box_metric">{{ $d.ElevationGain }} m<small class="label">Elevation Gain</small></div>
+            <div class="box_metric">{{ oneDecimal $d.AverageAltitude }} m<small class="label">Average Altitude</small>
+            </div>
+            <div class="box_metric">{{ time $d.MovingTimeInSeconds }}<small class="label">Time</small></div>
+          </section>
+        </div>
+        <div class="photos"></div>
       </li>
       {{ end }}
     </ol>
   </div>
 </div>
-
 
 {{end}}

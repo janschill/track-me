@@ -28,7 +28,12 @@ body {
   font-size: 16px;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--primary-color);
   font-family: 'Neue Regrade', var(--font-family);
   margin-bottom: 10px;
@@ -48,7 +53,11 @@ p {
   height: 85vh;
 }
 
-.map, .map-container, .messages-container, .days-container, .aside-container {
+.map,
+.map-container,
+.messages-container,
+.days-container,
+.aside-container {
   width: 100%;
   margin: 0 auto;
   display: block;
@@ -62,7 +71,11 @@ p {
     grid-template-rows: auto auto auto auto;
     grid-gap: 20px;
   }
-  .map-container { grid-area: 1 / 1 / 2 / 2; }
+
+  .map-container {
+    grid-area: 1 / 1 / 2 / 2;
+  }
+
   .aside-container {
     grid-area: 2 / 1 / 3 / 2;
     display: grid;
@@ -71,16 +84,35 @@ p {
     grid-column-gap: 0px;
     grid-row-gap: 0px;
   }
-  .messages-container, .days-container {
+
+  .messages-container,
+  .days-container {
     grid-area: auto;
   }
-  .messages-container { grid-area: 3 / 1 / 4 / 2; }
-  .days-container { grid-area: 4 / 1 / 5 / 2; }
 
-  .aside__title {  grid-area: 1 / 1 / 2 / 3; }
-  .aside__text {  grid-area: 2 / 1 / 3 / 3; }
-  .aside__route {  grid-area: 3 / 1 / 4 / 2; }
-  .aside__ride {  grid-area: 3 / 2 / 4 / 3; }
+  .messages-container {
+    grid-area: 3 / 1 / 4 / 2;
+  }
+
+  .days-container {
+    grid-area: 4 / 1 / 5 / 2;
+  }
+
+  .aside__title {
+    grid-area: 1 / 1 / 2 / 3;
+  }
+
+  .aside__text {
+    grid-area: 2 / 1 / 3 / 3;
+  }
+
+  .aside__route {
+    grid-area: 3 / 1 / 4 / 2;
+  }
+
+  .aside__ride {
+    grid-area: 3 / 2 / 4 / 3;
+  }
 }
 
 /* Large screens (min-width of 1000px) */
@@ -92,10 +124,22 @@ p {
     grid-column-gap: 20px;
     grid-row-gap: 20px;
   }
-  .map-container { grid-area: 1 / 2 / 4 / 6; }
-  .messages-container { grid-area: 4 / 2 / 5 / 4; }
-  .days-container { grid-area: 4 / 4 / 5 / 6; }
-  .aside-container { grid-area: 1 / 1 / 5 / 2; }
+
+  .map-container {
+    grid-area: 1 / 2 / 4 / 6;
+  }
+
+  .messages-container {
+    grid-area: 4 / 2 / 5 / 4;
+  }
+
+  .days-container {
+    grid-area: 4 / 4 / 5 / 6;
+  }
+
+  .aside-container {
+    grid-area: 1 / 1 / 5 / 2;
+  }
 }
 
 .flex {
@@ -158,7 +202,7 @@ p {
   box-sizing: border-box;
   background: var(--secondary-color);
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .box--border {
@@ -204,4 +248,51 @@ p {
   font-size: 0.75rem;
   color: var(--text-secondary-color);
   margin-left: 10px;
+}
+
+.thumbnail {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.large-image {
+  width: 500px;
+  height: auto;
+  display: none;
+}
+
+.photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.days-container .list-item {
+  margin-bottom: 10px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.high-res-img {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
 }

@@ -150,9 +150,100 @@ function setUpForm() {
 
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+function closeHighResImage() {
+  const overlay = document.querySelector('.overlay');
+  if (overlay) {
+    overlay.remove();
+  }
+  document.removeEventListener('keydown', handleKeyDown);
+}
+
+function handleKeyDown(event) {
+  if (event.key === 'Escape') {
+    closeHighResImage();
+  }
+}
+
+function showHighResImage(event) {
+  const highResUrl = event.target.dataset.highResUrl;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  overlay.addEventListener('click', closeHighResImage);
+
+  const highResImg = document.createElement('img');
+  highResImg.src = highResUrl;
+  highResImg.className = 'high-res-img';
+
+  const closeButton = document.createElement('button');
+  closeButton.className = 'close-button button';
+  closeButton.innerText = 'Close';
+  closeButton.addEventListener('click', closeHighResImage);
+
+  overlay.appendChild(highResImg);
+  overlay.appendChild(closeButton);
+  document.body.appendChild(overlay);
+
+  document.addEventListener('keydown', handleKeyDown);
+}
+
+function displayImages(photosByDate) {
+  const daysContainer = document.querySelectorAll('.days-container ol li');
+
+  if (!daysContainer.length) {
+    return;
+  }
+
+  for (const date in photosByDate) {
+    const photos = photosByDate[date];
+
+    for (const photo of photos) {
+      const thumbnail = photo.derivatives[342].mediaUrl
+      const highResUrl = photo.derivatives[2049].mediaUrl
+
+      const img = document.createElement('img');
+      img.src = thumbnail;
+      img.className = 'thumbnail';
+      img.dataset.highResUrl = highResUrl;
+      img.addEventListener('click', showHighResImage);
+
+      daysContainer.forEach(day => {
+        const dayDate = day.querySelector('.day-date').value;
+        if (dayDate === date) {
+          const photosContainer = day.querySelector('.photos');
+          if (photosContainer) {
+            photosContainer.appendChild(img);
+          }
+        }
+      });
+    }
+  }
+}
+
+async function getPhotos() {
+  const response = await fetch("/photos")
+  return await response.json()
+}
+
+function groupByDate(photos) {
+  const photosByDate = {};
+
+  photos.forEach(photo => {
+    const date = new Date(photo.dateCreated).toISOString().split('T')[0]; // Extract the date part
+    if (!photosByDate[date]) {
+      photosByDate[date] = [];
+    }
+    photosByDate[date].push(photo);
+  });
+
+  return photosByDate;
+}
+
+document.addEventListener('DOMContentLoaded', async function () {
   setUpMap()
   setUpForm()
   calculateLastPing()
   updateMovingStatus()
+  const photos = await getPhotos()
+  displayImages(groupByDate(photos))
 });
