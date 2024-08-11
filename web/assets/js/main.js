@@ -96,12 +96,13 @@ function setUpMap() {
 
 function calculateLastPing() {
   const lastPingUnix = serverData.LastEvent.TimeStamp;
+  console.log(lastPingUnix)
   const lastPingElement = document.querySelector('#lastPing');
   if (!lastPingUnix) {
     lastPingElement.textContent = `N/A`;
     return
   }
-  const lastPingDate = new Date(lastPingUnix);
+  const lastPingDate = new Date(lastPingUnix * 1000);
   const now = new Date();
   const diffInSeconds = Math.floor((now - lastPingDate) / 1000);
   const diffInMinutes = Math.floor(diffInSeconds / 60);
