@@ -13,7 +13,12 @@
       <h2>Planned Route</h2>
       <article class="block col-2">
         <section class="row">
+          <div class="col">Sep 9th<small class="label">Start Date</small></div>
+          <div class="col">Oct 9th<small class="label">End Date</small></div>
+        </section>
+        <section class="row">
           <div class="col">3,891 km<small class="label">Distance</small></div>
+          <div class="col">30 days<small class="label">Estimated Duration</small></div>
         </section>
         <section class="row">
           <div class="col">44,009 m<small class="label">Elevation Gain</small></div>
@@ -26,13 +31,6 @@
         <section class="row">
           <div class="col">39 %<small class="label">Paved</small></div>
           <div class="col">61 %<small class="label">Unpaved</small></div>
-        </section>
-        <section class="row">
-          <div class="col">30 days<small class="label">Estimated Duration</small></div>
-        </section>
-        <section class="row">
-          <div class="col">Sep 9th 2024<small class="label">Start Date</small></div>
-          <div class="col">Oct 9th 2024<small class="label">End Date</small></div>
         </section>
       </article>
     </section>
@@ -157,8 +155,10 @@
       {{ range .Messages }}
       <li class="box {{if .FromGarmin}}box--border{{end}}">
         <header class="box__header box__header--baseline">
-          <h3 class="box__title ft-l">{{ .Name }}{{if not .FromGarmin}} wrote{{end}}</h3>
-          <small class="box__subtitle">{{ wroteOnTime .TimeStamp }}</small>
+          <div class="left">
+            <h3 class="box__title ft-l">{{ .Name }}{{if not .FromGarmin}} wrote{{end}}</h3>
+            <small class="box__subtitle" data-timestamp="{{ .TimeStamp }}"></small>
+          </div>
         </header>
         <section>
           <p>{{ .Message }}</p>
