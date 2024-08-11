@@ -79,13 +79,18 @@ func updateRideStats(ride *Ride, day Day) {
 }
 
 func (s *DayService) GetDays(events []repository.Event) ([]Day, Ride) {
-	currentDate := time.Now().Format("2006-01-02")
+	mountainTime, err := time.LoadLocation("America/Denver")
+	if err != nil {
+			log.Fatalf("Failed to load Mountain Time Zone: %v", err)
+	}
+
+	currentDate := time.Now().In(mountainTime).Format("2006-01-02")
 	eventsByDay := make(map[string][]repository.Event)
 
 	var ride Ride
 
 	for _, event := range events {
-		date := time.Unix(event.TimeStamp, 0).Format("2006-01-02")
+		date := time.Unix(event.TimeStamp, 0).In(mountainTime).Format("2006-01-02")
 		eventsByDay[date] = append(eventsByDay[date], event)
 	}
 
