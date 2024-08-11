@@ -80,6 +80,7 @@ func (r *EventRepository) All() ([]Event, error) {
 		FROM events
 		WHERE messageCode NOT IN (3, 14, 15, 16, 66, 67)
 		AND messageCode NOT BETWEEN 24 AND 63
+		AND (latitude != 0.0 OR longitude != 0.0)
 		ORDER BY timeStamp
 	`)
 	if err != nil {

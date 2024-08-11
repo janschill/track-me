@@ -147,12 +147,18 @@ func DistanceInMeters(events []repository.Event) float64 {
 }
 
 func CalculateAltitudes(events []repository.Event) (averageAltitude, maxAltitude, minAltitude float64) {
+	ignoredEventsCount := 0
+
 	if len(events) < 1 {
 		return 0, 0, 0
 	}
 	var totalAltitude float64
 	minAltitude = math.MaxInt64
 	for _, event := range events {
+		if event.Altitude < 0 {
+			ignoredEventsCount++
+			continue
+		}
 		if event.Altitude > maxAltitude {
 			maxAltitude = event.Altitude
 		}
@@ -161,7 +167,7 @@ func CalculateAltitudes(events []repository.Event) (averageAltitude, maxAltitude
 		}
 		totalAltitude += event.Altitude
 	}
-	averageAltitude = totalAltitude / float64(len(events))
+	averageAltitude = totalAltitude / float64(len(events)-ignoredEventsCount)
 	return averageAltitude, maxAltitude, minAltitude
 }
 
@@ -171,6 +177,10 @@ func CalculateElevationGainAndLoss(events []repository.Event) (elevationGain, el
 	}
 
 	for i := 1; i < len(events); i++ {
+		if events[i].Altitude < 0 || events[i-1].Altitude < 0 {
+			continue
+		}
+
 		altitudeDiff := events[i].Altitude - events[i-1].Altitude
 		if altitudeDiff > 0 {
 			elevationGain += int64(altitudeDiff)
