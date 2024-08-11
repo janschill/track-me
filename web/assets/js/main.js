@@ -6,11 +6,11 @@ import { convertTimestamps, updateLastPingTime, updateMovementStatus } from "./m
 
 document.addEventListener('DOMContentLoaded', async function () {
   initializeMap()
-  convertTimestamps()
   setupFormSubmission()
   updateLastPingTime()
   updateMovementStatus()
   const photos = await fetchPhotos()
   displayPhotosByDate(photos)
   lockKudosButtons()
+  convertTimestamps()
 });

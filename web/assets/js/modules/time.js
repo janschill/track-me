@@ -2,9 +2,13 @@ export function convertTimestamps() {
   document.querySelectorAll('.box__subtitle[data-timestamp]').forEach(element => {
     const date = new Date(parseInt(element.dataset.timestamp) * 1000);
     const formattedDate = date.toLocaleString('en-GB', {
-      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
-    });
-    element.textContent = formattedDate;
+      day: '2-digit',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).replace(',', ' at');
+    element.textContent = `on ${formattedDate}`;
   });
 }
 
