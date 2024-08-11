@@ -14,7 +14,6 @@ export function convertTimestamps() {
 
 export function updateLastPingTime() {
   const lastPingUnix = serverData.LastEvent.TimeStamp;
-  console.log(lastPingUnix)
   const lastPingElement = document.querySelector('#lastPing');
   if (!lastPingUnix) {
     lastPingElement.textContent = `N/A`;

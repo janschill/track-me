@@ -1,4 +1,4 @@
-import { lockKudosButtons } from "./modules/kudos.js";
+import { lockKudosButtons, sendKudos } from "./modules/kudos.js";
 import { initializeMap } from "./modules/map.js";
 import { setupFormSubmission } from "./modules/messages.js";
 import { displayPhotosByDate, fetchPhotos } from "./modules/photos.js";
@@ -13,4 +13,5 @@ document.addEventListener('DOMContentLoaded', async function () {
   displayPhotosByDate(photos)
   lockKudosButtons()
   convertTimestamps()
+  window.sendKudos = sendKudos
 });

@@ -1,7 +1,8 @@
 export function lockKudosButtons() {
   document.querySelectorAll('.kudos-button').forEach(button => {
-    const day = button.dataset.day;
-    if (localStorage.getItem(`kudos_${day}`)) {
+    const day = button.getAttribute('onclick').match(/'([^']+)'/)[1];
+    const kudosKey = `kudos_${day}`;
+    if (localStorage.getItem(kudosKey)) {
       button.classList.add('kudos-button--clicked');
     }
   });

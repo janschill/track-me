@@ -169,6 +169,7 @@
   </div>
   <div class="days-container">
     <h2>Days</h2>
+    {{ if .Days }}
     <ol>
       {{ range $i, $d := .Days }}
       <li class="list-item">
@@ -209,6 +210,9 @@
       </li>
       {{ end }}
     </ol>
+    {{ else }}
+    We haven't biked yet ...
+    {{ end }}
   </div>
 </div>
 
