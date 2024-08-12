@@ -1,3 +1,13 @@
+export function countCharacters() {
+  const messageInput = document.getElementById('message');
+  const charCount = document.getElementById('charCount');
+  const maxLength = 160;
+
+  messageInput.addEventListener('input', () => {
+    charCount.textContent = `${messageInput.value.length}/160`;
+  });
+}
+
 export function setupFormSubmission() {
   const messageForm = document.getElementById('messageForm')
   const nameElement = messageForm.querySelector('#name')
