@@ -60,7 +60,14 @@ func HttpServer(addr string, ctx context.Context) *http.Server {
 	}
 	repo := repository.NewRepository(db)
 	dayService := service.NewDayService()
-	garminClient := clients.NewGarminClient(conf.GarminIPCInbound, conf.GarminDeviceIMEI)
+	garminClient := clients.NewGarminClient(clients.GarminConfig{
+		Address:  conf.GarminIPCInbound,
+		Imei:     conf.GarminDeviceIMEI,
+		Email:    conf.GarminIpcInboundEmail,
+		Password: conf.GarminIpcInboundPassword,
+		Limit:    1,
+		Interval: time.Hour,
+	})
 
 	return &http.Server{
 		Addr:         ":" + addr,
