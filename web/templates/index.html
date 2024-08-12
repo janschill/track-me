@@ -142,12 +142,16 @@
       <label hidden for="message">Message:</label>
       <textarea class="text-box" rows="4" required minlength="2" maxlength="160" type="text" id="message" name="message"
         placeholder="Write a message..."></textarea><br>
-      <div class="flex">
+      <div class="flex mb-10">
         <div>
           <input type="checkbox" id="sentToGarmin" name="sentToGarmin" value="true">
           <label for="sentToGarmin">Send to my tracker*</label>
         </div>
-        <input class="button" type="submit" value="Send">
+        <input id="submit-button" disabled class="button" type="submit" value="Send">
+      </div>
+      <div id="email-input-container" class="hidden">
+        <label hidden for="email">Email Address:</label>
+        <input class="text-box" type="email" id="email" name="email" placeholder="jonas@vingegaard.dk">
       </div>
       <small class="disclaimer">*I will receive the message immediately on my Garmin Tracker.</small>
     </form>
