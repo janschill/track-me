@@ -161,6 +161,15 @@ p {
   background-color: var(--primary-color-bright);
 }
 
+.button:disabled {
+  filter: opacity(30%);
+  cursor: default;
+}
+
+.button:disabled .button:hover {
+  background-color: var(--primary-color);
+}
+
 .block {
   background: var(--secondary-color);
   flex: 1;
@@ -335,4 +344,29 @@ p {
 .kudos-symbol {
   height: 20px;
   margin-top: 2px;
+}
+
+.satelite-symbol {
+  fill: var(--primary-color);
+  height: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+.visible {
+  display: block;
+}
+
+.mt-5 {
+  margin-top: 5px;
+}
+
+.ft-s {
+  font-size: 0.75rem;
+}
+
+.ta-r {
+  text-align: right;
 }

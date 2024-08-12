@@ -7,15 +7,20 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/janschill/track-me/internal/clients"
 	"github.com/janschill/track-me/internal/repository"
 )
 
 type MessageHandler struct {
 	repo *repository.Repository
+	client *clients.GarminClient
 }
 
-func NewMessageHandler(repo *repository.Repository) *MessageHandler {
-	return &MessageHandler{repo: repo}
+func NewMessageHandler(repo *repository.Repository, client *clients.GarminClient) *MessageHandler {
+	return &MessageHandler{
+		repo: repo,
+		client: client,
+	}
 }
 
 func (h *MessageHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
@@ -30,11 +35,14 @@ func (h *MessageHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Message received: %s\n", r.FormValue("message"))
-	log.Printf("Name: %s\n", r.FormValue("name"))
-	log.Printf("Sent to Garmin: %v\n", r.FormValue("sentToGarmin"))
+	message := r.FormValue("message")
+	name := r.FormValue("name")
+	sender := r.FormValue("email")
 
-	if r.FormValue("message") == "" || r.FormValue("name") == "" {
+	log.Printf("Message received: %s\n", message)
+	log.Printf("Name: %s\n", name)
+
+	if message == "" || name == "" {
 		http.Error(w, "Name or message cannot be blank", http.StatusBadRequest)
 		return
 	}
@@ -43,29 +51,37 @@ func (h *MessageHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		sentToGarmin = false
 	}
+	log.Printf("Sent to Garmin: %v\n", sentToGarmin)
 
-	message := repository.Message{
+	if sentToGarmin && r.FormValue("email") == "" {
+		http.Error(w, "Email cannot be blank when sending to Garmin", http.StatusBadRequest)
+		return
+	}
+
+	time := time.Now().Unix()
+
+	m := repository.Message{
 			TripID:       1,
-			Message:      r.FormValue("message"),
-			Name:         r.FormValue("name"),
-			TimeStamp:    time.Now().Unix(),
+			Message:      message,
+			Name:         name,
+			TimeStamp:    time,
 			SentToGarmin: sentToGarmin,
 			FromGarmin: false,
 	}
 
-	if message.SentToGarmin {
-		log.Printf("Sending message to Garmin: %s\n", message.Message)
+	if m.SentToGarmin {
+		h.client.SendMessage(sender, message)
 	}
 
-	h.repo.Messages.Create(message)
+	h.repo.Messages.Create(m)
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"message":      message.Message,
-		"name":         message.Name,
-		"timeStamp":    strconv.FormatInt(message.TimeStamp, 10),
-		"sentToGarmin": strconv.FormatBool(message.SentToGarmin),
-		"fromGamin":    strconv.FormatBool(message.FromGarmin),
+		"message":      m.Message,
+		"name":         m.Name,
+		"timeStamp":    strconv.FormatInt(m.TimeStamp, 10),
+		"sentToGarmin": strconv.FormatBool(m.SentToGarmin),
+		"fromGamin":    strconv.FormatBool(m.FromGarmin),
 	})
 }
