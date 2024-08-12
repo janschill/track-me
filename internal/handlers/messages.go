@@ -7,14 +7,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/janschill/track-me/internal/clients"
 	"github.com/janschill/track-me/internal/repository"
 )
 
 type MessageHandler struct {
 	repo *repository.Repository
+	client *clients.GarminClient
 }
 
-func NewMessageHandler(repo *repository.Repository) *MessageHandler {
+func NewMessageHandler(repo *repository.Repository, client *clients.GarminClient) *MessageHandler {
 	return &MessageHandler{repo: repo}
 }
 
@@ -44,6 +46,11 @@ func (h *MessageHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 		sentToGarmin = false
 	}
 
+	if sentToGarmin && r.FormValue("email") == "" {
+		http.Error(w, "Email cannot be blank when sending to Garmin", http.StatusBadRequest)
+		return
+	}
+
 	message := repository.Message{
 			TripID:       1,
 			Message:      r.FormValue("message"),
@@ -54,7 +61,7 @@ func (h *MessageHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if message.SentToGarmin {
-		log.Printf("Sending message to Garmin: %s\n", message.Message)
+		h.client.SendMessage()
 	}
 
 	h.repo.Messages.Create(message)

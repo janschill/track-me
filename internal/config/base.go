@@ -10,6 +10,8 @@ import (
 type Config struct {
 	DatabaseURL string
 	SentryDsn string
+	GarminIPCInbound string
+	GarminDeviceIMEI string
 }
 
 func LoadConfig() (*Config, error) {
@@ -20,5 +22,7 @@ func LoadConfig() (*Config, error) {
 	return &Config{
 		DatabaseURL: os.Getenv("DB_PATH"),
 		SentryDsn: os.Getenv("SENTRY_DSN"),
+		GarminIPCInbound: os.Getenv("GARMIN_IPC_INBOUND"),
+		GarminDeviceIMEI: os.Getenv("GARMIN_DEVICE_IMEI"),
 	}, nil
 }
