@@ -346,10 +346,27 @@ p {
   margin-top: 2px;
 }
 
+.satelite-symbol {
+  fill: var(--primary-color);
+  height: 20px;
+}
+
 .hidden {
   display: none;
 }
 
 .visible {
   display: block;
+}
+
+.mt-5 {
+  margin-top: 5px;
+}
+
+.ft-s {
+  font-size: 0.75rem;
+}
+
+.ta-r {
+  text-align: right;
 }
