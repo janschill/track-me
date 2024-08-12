@@ -12,6 +12,8 @@ type Config struct {
 	SentryDsn string
 	GarminIPCInbound string
 	GarminDeviceIMEI string
+	GarminIpcInboundEmail string
+	GarminIpcInboundPassword string
 }
 
 func LoadConfig() (*Config, error) {
@@ -24,5 +26,7 @@ func LoadConfig() (*Config, error) {
 		SentryDsn: os.Getenv("SENTRY_DSN"),
 		GarminIPCInbound: os.Getenv("GARMIN_IPC_INBOUND"),
 		GarminDeviceIMEI: os.Getenv("GARMIN_DEVICE_IMEI"),
+		GarminIpcInboundEmail: os.Getenv("GARMIN_IPC_INBOUND_EMAIL"),
+		GarminIpcInboundPassword: os.Getenv("GARMIN_IPC_INBOUND_PASSWORD"),
 	}, nil
 }
