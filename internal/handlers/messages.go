@@ -12,13 +12,13 @@ import (
 )
 
 type MessageHandler struct {
-	repo *repository.Repository
+	repo   *repository.Repository
 	client *clients.GarminClient
 }
 
 func NewMessageHandler(repo *repository.Repository, client *clients.GarminClient) *MessageHandler {
 	return &MessageHandler{
-		repo: repo,
+		repo:   repo,
 		client: client,
 	}
 }
@@ -61,12 +61,12 @@ func (h *MessageHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 	time := time.Now().Unix()
 
 	m := repository.Message{
-			TripID:       1,
-			Message:      message,
-			Name:         name,
-			TimeStamp:    time,
-			SentToGarmin: sentToGarmin,
-			FromGarmin: false,
+		TripID:       1,
+		Message:      message,
+		Name:         name,
+		TimeStamp:    time,
+		SentToGarmin: sentToGarmin,
+		FromGarmin:   false,
 	}
 
 	if m.SentToGarmin {
