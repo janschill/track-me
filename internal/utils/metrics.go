@@ -155,7 +155,9 @@ func CalculateAltitudes(events []repository.Event) (averageAltitude, maxAltitude
 	var totalAltitude float64
 	minAltitude = math.MaxInt64
 	for _, event := range events {
-		if event.Altitude < 0 {
+		// Message Code 10 announces a tracking start
+		// Usually the altitude on these events are quite off
+		if event.Altitude < 0 || event.MessageCode == 10 {
 			ignoredEventsCount++
 			continue
 		}
