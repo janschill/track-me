@@ -178,20 +178,26 @@ func CalculateElevationGainAndLoss(events []repository.Event) (elevationGain, el
 		return 0, 0
 	}
 
-	for i := 1; i < len(events); i++ {
+	i := 0
+	for j := 1; j < len(events); j++ {
 		// Message Code 10 announces a tracking start
 		// Usually the altitude on these events are quite off
-		if events[i].Altitude < 0 || events[i-1].Altitude < 0 || events[i].MessageCode == 10 {
+		if events[j].Altitude < 0 || events[j].MessageCode == 10 {
 			continue
 		}
 
-		altitudeDiff := events[i].Altitude - events[i-1].Altitude
-		if altitudeDiff > 0 {
-			elevationGain += int64(altitudeDiff)
-		} else {
-			elevationLoss -= int64(altitudeDiff)
+		if events[i].Altitude >= 0 && events[i].MessageCode != 10 {
+			altitudeDiff := events[j].Altitude - events[i].Altitude
+			if altitudeDiff > 0 {
+				elevationGain += int64(altitudeDiff)
+			} else {
+				elevationLoss -= int64(altitudeDiff)
+			}
 		}
+
+		i = j
 	}
+
 	return elevationGain, elevationLoss
 }
 
