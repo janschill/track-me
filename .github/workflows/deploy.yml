@@ -19,13 +19,24 @@ jobs:
     - name: Build Docker image
       run: docker build -t trackme-builder .
 
+    - name: Run unit tests inside Docker container
+      id: test
+      run: |
+        docker create --name test-container trackme-builder
+        docker start test-container
+        docker exec test-container go test -v ./...
+        docker stop test-container
+        docker rm test-container
+
     - name: Extract binary from Docker container
+      if: steps.test.outcome == 'success'
       run: |
         docker create --name extract trackme-builder
         docker cp extract:/app/trackme ./trackme
         docker rm extract
 
     - name: Copy assets and templates
+      if: steps.test.outcome == 'success'
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.SERVER_IP }}

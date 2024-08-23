@@ -201,31 +201,6 @@ func CalculateElevationGainAndLoss(events []repository.Event) (elevationGain, el
 	return elevationGain, elevationLoss
 }
 
-// TODO:
-func CalculateStops(events []repository.Event) (numberOfStops, totalStopTimeInSeconds int) {
-	if len(events) < 2 {
-		return 0, 0
-	}
-
-	inStop := false
-	for i := 1; i < len(events); i++ {
-		distance := haversine(events[i-1].Latitude, events[i-1].Longitude, events[i].Latitude, events[i].Longitude)
-		timeDiff := time.Unix(events[i].TimeStamp, 0).Sub(time.Unix(events[i-1].TimeStamp, 0)).Seconds()
-		speed := (distance / timeDiff) * 3.6 // Convert m/s to km/h
-
-		if speed < 1.0 { // Assuming speed < 1 km/h is considered a stop
-			if !inStop {
-				numberOfStops++
-				inStop = true
-			}
-			totalStopTimeInSeconds += int(timeDiff)
-		} else {
-			inStop = false
-		}
-	}
-	return numberOfStops, totalStopTimeInSeconds
-}
-
 func CalculateMaxSpeed(events []repository.Event) (maxSpeed float64) {
 	maxSpeed = math.Inf(-1)
 	for i := 1; i < len(events); i++ {
