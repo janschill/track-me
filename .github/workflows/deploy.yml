@@ -22,6 +22,7 @@ jobs:
       run: go mod download
 
     - name: Run unit tests
+      id: test
       run: go test -v ./...
 
     - name: Set up Docker Buildx
