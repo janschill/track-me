@@ -13,20 +13,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.21'
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Run unit tests
+      run: go test -v ./...
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
     - name: Build Docker image
       run: docker build -t trackme-builder .
-
-    - name: Run unit tests inside Docker container
-      id: test
-      run: |
-        docker create --name test-container trackme-builder
-        docker start test-container
-        docker exec test-container go test -v ./...
-        docker stop test-container
-        docker rm test-container
 
     - name: Extract binary from Docker container
       if: steps.test.outcome == 'success'
