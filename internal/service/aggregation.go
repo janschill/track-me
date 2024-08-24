@@ -24,7 +24,6 @@ func (s *AggregationService) Aggregate(day string) {
 	// log.Printf("Aggregated %d events for day %s", len(events), day)
 	// movingTime, averageSpeed := utils.CalculateMovingTimeAndAverageSpeed(events, 0.001)
 	// gain, loss := utils.CalculateElevationGainAndLoss(events)
-	// maxSpeed := CalculateMaxSpeed(events)
 	// averageAltitude, maxAltitude, minAltitude := utils.CalculateAltitudes(events)
 	// stops, stopTime := CalculateStops(events)
 

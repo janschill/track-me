@@ -200,15 +200,3 @@ func CalculateElevationGainAndLoss(events []repository.Event) (elevationGain, el
 
 	return elevationGain, elevationLoss
 }
-
-func CalculateMaxSpeed(events []repository.Event) (maxSpeed float64) {
-	maxSpeed = math.Inf(-1)
-	for i := 1; i < len(events); i++ {
-		speed := events[i].Speed
-
-		if speed > maxSpeed {
-			maxSpeed = speed
-		}
-	}
-	return maxSpeed
-}
