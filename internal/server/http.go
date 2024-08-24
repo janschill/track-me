@@ -19,7 +19,6 @@ import (
 
 var conf *config.Config
 
-
 func newHTTPHandler(repo *repository.Repository, dayService *service.DayService, garminService *service.GarminService, garminClient *garmin.Client) http.Handler {
 	mux := http.NewServeMux()
 	sentryHandler := sentryhttp.New(sentryhttp.Options{})
@@ -32,6 +31,9 @@ func newHTTPHandler(repo *repository.Repository, dayService *service.DayService,
 	mux.Handle("/kudos", sentryHandler.Handle(http.HandlerFunc(handlers.NewKudosHandler(repo).CreateKudos)))
 	mux.Handle("/garmin-outbound", sentryHandler.Handle(http.HandlerFunc(garmin.NewOutboundHandler(garminService.ProcessPayload).CreateOutboundEvent)))
 	mux.Handle("/photos", sentryHandler.Handle(http.HandlerFunc(handlers.NewICloudHandler().Photos)))
+	mux.Handle("/error", sentryHandler.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		panic("Test error for Sentry")
+	})))
 
 	return mux
 }

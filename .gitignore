@@ -5,3 +5,4 @@ trackme
 .DS_Store
 main
 coverage.*
+cover.out
