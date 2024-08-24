@@ -1,4 +1,4 @@
-package clients
+package garmin
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type GarminClient struct {
+type Client struct {
 	httpClient  *http.Client
 	address     string
 	imei        string
@@ -31,7 +31,7 @@ type MessageRequestPayload struct {
 	Messages []Message `json:"Messages"`
 }
 
-type GarminConfig struct {
+type Config struct {
 	Address  string
 	Imei     string
 	Email    string
@@ -40,8 +40,8 @@ type GarminConfig struct {
 	Interval time.Duration
 }
 
-func NewGarminClient(config GarminConfig) *GarminClient {
-	return &GarminClient{
+func NewClient(config Config) *Client {
+	return &Client{
 		httpClient:  &http.Client{},
 		address:     config.Address,
 		imei:        config.Imei,
@@ -51,7 +51,7 @@ func NewGarminClient(config GarminConfig) *GarminClient {
 	}
 }
 
-func (c *GarminClient) newRequest(method, endpoint string, body []byte) (*http.Request, error) {
+func (c *Client) newRequest(method, endpoint string, body []byte) (*http.Request, error) {
 	url := fmt.Sprintf("%s%s", c.address, endpoint)
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
 	if err != nil {
@@ -87,7 +87,7 @@ func logResponse(res *http.Response) {
 	}
 }
 
-func (c *GarminClient) SendMessage(sender string, message string) error {
+func (c *Client) SendMessage(sender string, message string) error {
 	if len(message) > 160 {
 		return fmt.Errorf("message length exceeds limit")
 	}

@@ -1,4 +1,4 @@
-package clients
+package garmin
 
 import (
 	"encoding/json"
@@ -51,7 +51,7 @@ func TestGarminClient(t *testing.T) {
 			}))
 			defer server.Close()
 
-			client := &GarminClient{
+			client := &Client{
 				httpClient:  server.Client(),
 				address:     server.URL,
 				imei:        "test-imei",

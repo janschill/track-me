@@ -4,3 +4,4 @@ trackme
 .env
 .DS_Store
 main
+coverage.*

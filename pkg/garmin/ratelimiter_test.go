@@ -1,4 +1,4 @@
-package clients
+package garmin
 
 import (
 	"testing"

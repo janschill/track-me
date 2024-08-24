@@ -7,16 +7,16 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/janschill/track-me/internal/clients"
 	"github.com/janschill/track-me/internal/repository"
+	garmin "github.com/janschill/track-me/pkg/garmin"
 )
 
 type MessageHandler struct {
 	repo   *repository.Repository
-	client *clients.GarminClient
+	client *garmin.Client
 }
 
-func NewMessageHandler(repo *repository.Repository, client *clients.GarminClient) *MessageHandler {
+func NewMessageHandler(repo *repository.Repository, client *garmin.Client) *MessageHandler {
 	return &MessageHandler{
 		repo:   repo,
 		client: client,
