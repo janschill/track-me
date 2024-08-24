@@ -41,10 +41,8 @@ func TestGarminClient(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Initialize the real rate limiter
 			rateLimiter := NewRateLimiter(1, time.Minute)
 
-			// Mock HTTP server
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.httpStatusCode)
 				json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
@@ -58,16 +56,13 @@ func TestGarminClient(t *testing.T) {
 				rateLimiter: rateLimiter,
 			}
 
-			// Simulate rate limiting
 			if !tt.rateLimitAllow {
 				rateLimiter.Allow("test-imei")
 				rateLimiter.Allow("test-imei")
 			}
 
-			// Call the method under test
 			err := client.SendMessage(tt.name, tt.message)
 
-			// Check the expected error
 			if err == nil || err.Error() != tt.expectedError {
 				t.Errorf("expected error %v, got %v", tt.expectedError, err)
 			}

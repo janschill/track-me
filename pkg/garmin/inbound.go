@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"time"
@@ -64,27 +63,6 @@ func (c *Client) newRequest(method, endpoint string, body []byte) (*http.Request
 	req.Header.Set("Authorization", "Basic "+auth)
 
 	return req, nil
-}
-
-func logRequest(req *http.Request) {
-	log.Printf("Request URL: %s", req.URL.String())
-	log.Printf("Request Method: %s", req.Method)
-	log.Printf("Request Headers: %v", req.Header)
-	if req.Body != nil {
-		bodyBytes, _ := io.ReadAll(req.Body)
-		req.Body = io.NopCloser(bytes.NewBuffer(bodyBytes)) // Reset the body after reading
-		log.Printf("Request Body: %s", string(bodyBytes))
-	}
-}
-
-func logResponse(res *http.Response) {
-	log.Printf("Response Status: %v", res.StatusCode)
-	log.Printf("Response Headers: %v", res.Header)
-	if res.Body != nil {
-		bodyBytes, _ := io.ReadAll(res.Body)
-		res.Body = io.NopCloser(bytes.NewBuffer(bodyBytes)) // Reset the body after reading
-		log.Printf("Response Body: %s", string(bodyBytes))
-	}
 }
 
 func (c *Client) SendMessage(sender string, message string) error {

@@ -127,4 +127,53 @@ func TestCreateOutboundEvent_Error(t *testing.T) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), expected)
 	}
+
+}
+
+func TestCreateOutboundEvent_MethodNotAllowed(t *testing.T) {
+	handler := NewOutboundHandler(mockProcessPayload)
+
+	req, err := http.NewRequest("GET", "/garmin-outbound", nil)
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler.CreateOutboundEvent(rr, req)
+
+	if status := rr.Code; status != http.StatusMethodNotAllowed {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusMethodNotAllowed)
+	}
+
+	expected := "Method is not supported.\n"
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
+}
+
+func TestCreateOutboundEvent_InvalidJSON(t *testing.T) {
+	handler := NewOutboundHandler(mockProcessPayload)
+
+	invalidJSON := "{invalid json}"
+
+	req, err := http.NewRequest("POST", "/garmin-outbound", bytes.NewBufferString(invalidJSON))
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+
+	rr := httptest.NewRecorder()
+	handler.CreateOutboundEvent(rr, req)
+
+	if status := rr.Code; status != http.StatusInternalServerError {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusInternalServerError)
+	}
+
+	expected := "Error parsing request body\n"
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
+	}
 }
