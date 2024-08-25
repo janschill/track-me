@@ -4,42 +4,57 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
-  build:
+  lint:
+    name: Run Linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.60
+
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run unit tests
+        run: go test -v ./...
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint, tests]
+    name: Deploy to server
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: '1.21'
-
-    - name: Install dependencies
-      run: go mod download
-
-    - name: Run unit tests
-      id: test
-      run: go test -v ./...
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+    - uses: actions/checkout@v2
+    - uses: docker/setup-buildx-action@v1
 
     - name: Build Docker image
       run: docker build -t trackme-builder .
 
     - name: Extract binary from Docker container
-      if: steps.test.outcome == 'success'
       run: |
         docker create --name extract trackme-builder
         docker cp extract:/app/trackme ./trackme
         docker rm extract
 
-    - name: Copy assets and templates
-      if: steps.test.outcome == 'success'
+    - name: Copy binary, assets and templates to server
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.SERVER_IP }}
@@ -49,8 +64,7 @@ jobs:
         source: "trackme,web"
         target: "~/track-me-temp/"
 
-    - name: Deploy to server
-      if: steps.test.outcome == 'success'
+    - name: Restart server with new binary
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SERVER_IP }}
