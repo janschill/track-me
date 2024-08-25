@@ -34,6 +34,37 @@ The Outbound services send periodically (10 minutes) HTTP POST requests to your 
 
 >The Garmin data push service requires end users to setup a web service to handle incoming HTTP-POST requests from the Garmin gateway.
 
+## iCloud Photos
+
+iCloud Photo Albums can be shared on a public address. This integration fetches all the photo URLs from an album. Every album has a unique token. You can find the token by looking at the public iCloud album URL. Each photo has a low and high resolution version of it exposed. The iCloud HTTP handler will call the iCloud API and expose a JSON array with the following structure.
+
+```javascript
+[
+  {
+    "dateCreated": "2024-08-20T16:47:55Z",
+    "derivatives": {
+      "2049": {
+        "dateCreated": "2024-08-20T16:47:55Z",
+        "mediaUrl": "https://cvws.icloud-content.com/..."
+      },
+      "342": {
+        "dateCreated": "2024-08-20T16:47:55Z",
+        "mediaUrl": "https://cvws.icloud-content.com/...'
+      }
+    },
+    "mediaAssetType": ""
+  }
+]
+```
+
+The iCloud handler expect a config with your iCloud's album token
+
+```go
+type Config struct {
+  Token string
+}
+```
+
 ## Deployment
 
 1. GitHub Actions will build the binary using Docker
