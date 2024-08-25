@@ -1,6 +1,7 @@
 SOURCE_FILES?=./...
 TEST_PATTERN?=.
-DB_PATH="./data/trips.db"
+include .env
+export
 
 export GOBIN := $(shell pwd)/bin
 export PATH := $(GOBIN):$(PATH)
@@ -58,6 +59,19 @@ todo:
 dev:
 	@echo "Starting server"
 	go run cmd/server/main.go
+
+download-db:
+	scp -r $(SSH_USER)@$(SERVER_ADDRESS):$(REMOTE_DB_PATH) .
+.PHONY: download-db
+
+sync-env:
+	@read -p "Are you sure you want to sync .env? This action cannot be undone. Type 'yes' to proceed: " confirm && \
+	if [ "$$confirm" = "yes" ]; then \
+		rsync -avz .env $(SSH_USER)@$(SERVER_ADDRESS):$(REMOTE_APP_ROOT)/.env; \
+	else \
+		echo "Operation cancelled."; \
+	fi
+.PHONY: sync-env
 
 run-mock:
 	@echo "Starting Garmin Outbound mock service"
