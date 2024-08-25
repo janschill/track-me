@@ -6,3 +6,4 @@ trackme
 main
 coverage.*
 cover.out
+bin/

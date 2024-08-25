@@ -1,6 +1,6 @@
 module github.com/janschill/track-me
 
-go 1.21
+go 1.23.0
 
 require (
 	github.com/getsentry/sentry-go v0.28.1
