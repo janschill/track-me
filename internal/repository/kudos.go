@@ -6,7 +6,7 @@ import (
 )
 
 type Kudos struct {
-	Day  string
+	Day   string
 	Count int
 }
 

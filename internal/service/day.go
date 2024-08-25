@@ -80,7 +80,7 @@ func updateRideStats(ride *Ride, day Day) {
 func (s *DayService) GetDays(events []repository.Event) ([]Day, Ride) {
 	mountainTime, err := time.LoadLocation("America/Denver")
 	if err != nil {
-			log.Fatalf("Failed to load Mountain Time Zone: %v", err)
+		log.Fatalf("Failed to load Mountain Time Zone: %v", err)
 	}
 
 	currentDate := time.Now().In(mountainTime).Format("2006-01-02")

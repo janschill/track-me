@@ -32,11 +32,11 @@ func main() {
 	}()
 	select {
 	case err := <-srvErr:
-			log.Fatalf("HTTP server error: %v", err)
+		log.Fatalf("HTTP server error: %v", err)
 	case <-ctx.Done():
-			stop()
+		stop()
 	}
 	if err := srv.Shutdown(context.Background()); err != nil {
-			log.Fatalf("HTTP server shutdown error: %v", err)
+		log.Fatalf("HTTP server shutdown error: %v", err)
 	}
 }

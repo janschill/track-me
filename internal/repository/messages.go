@@ -12,7 +12,7 @@ type Message struct {
 	Name         string
 	TimeStamp    int64
 	SentToGarmin bool
-	FromGarmin bool
+	FromGarmin   bool
 }
 
 type MessageRepository struct {

@@ -6,7 +6,6 @@ import (
 	"github.com/janschill/track-me/internal/repository"
 )
 
-
 func makeRange(min, max int) []int {
 	a := make([]int, max-min+1)
 	for i := range a {

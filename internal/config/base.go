@@ -8,13 +8,13 @@ import (
 )
 
 type Config struct {
-	DatabaseURL string
-	SentryDsn string
-	GarminIpcInbound string
-	GarminDeviceIMEI string
-	GarminIpcInboundEmail string
+	DatabaseURL              string
+	SentryDsn                string
+	GarminIpcInbound         string
+	GarminDeviceIMEI         string
+	GarminIpcInboundEmail    string
 	GarminIpcInboundPassword string
-	ICloudAlbumToken string
+	ICloudAlbumToken         string
 }
 
 func LoadConfig() (*Config, error) {
@@ -23,12 +23,12 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		DatabaseURL: os.Getenv("DB_PATH"),
-		SentryDsn: os.Getenv("SENTRY_DSN"),
-		GarminIpcInbound: os.Getenv("GARMIN_IPC_INBOUND"),
-		GarminDeviceIMEI: os.Getenv("GARMIN_DEVICE_IMEI"),
-		GarminIpcInboundEmail: os.Getenv("GARMIN_IPC_INBOUND_EMAIL"),
+		DatabaseURL:              os.Getenv("DB_PATH"),
+		SentryDsn:                os.Getenv("SENTRY_DSN"),
+		GarminIpcInbound:         os.Getenv("GARMIN_IPC_INBOUND"),
+		GarminDeviceIMEI:         os.Getenv("GARMIN_DEVICE_IMEI"),
+		GarminIpcInboundEmail:    os.Getenv("GARMIN_IPC_INBOUND_EMAIL"),
 		GarminIpcInboundPassword: os.Getenv("GARMIN_IPC_INBOUND_PASSWORD"),
-		ICloudAlbumToken: os.Getenv("ICLOUD_ALBUM_TOKEN"),
+		ICloudAlbumToken:         os.Getenv("ICLOUD_ALBUM_TOKEN"),
 	}, nil
 }

@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-
 func Authorize(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")

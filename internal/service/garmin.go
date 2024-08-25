@@ -16,7 +16,6 @@ func NewGarminService(repo *repository.Repository) *GarminService {
 	return &GarminService{repo: repo}
 }
 
-
 func (s *GarminService) ProcessPayload(payload garmin.OutboundPayload) error {
 	for _, pEvent := range payload.Events {
 		event := repository.Event{

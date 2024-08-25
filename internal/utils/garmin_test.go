@@ -26,19 +26,19 @@ func TestMakeRange(t *testing.T) {
 
 func TestHasMessage(t *testing.T) {
 	tests := []struct {
-			code int
-			want bool
+		code int
+		want bool
 	}{
-			{3, true},
-			{50, true},
-			{1, false},
+		{3, true},
+		{50, true},
+		{1, false},
 	}
 
 	for _, tt := range tests {
-			event := repository.Event{MessageCode: tt.code}
-			got := HasMessage(event)
-			if got != tt.want {
-					t.Errorf("hasMessage(%d) = %v, want %v", tt.code, got, tt.want)
-			}
+		event := repository.Event{MessageCode: tt.code}
+		got := HasMessage(event)
+		if got != tt.want {
+			t.Errorf("hasMessage(%d) = %v, want %v", tt.code, got, tt.want)
+		}
 	}
 }

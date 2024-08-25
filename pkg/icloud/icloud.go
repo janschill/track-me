@@ -10,9 +10,9 @@ import (
 )
 
 type ICloudHandler struct {
-	cache  CacheInterface
-	config Config
-	getWebStream   func(base_url string) (*StreamResponse, error)
+	cache           CacheInterface
+	config          Config
+	getWebStream    func(base_url string) (*StreamResponse, error)
 	getWebAssetUrls func(base_url string, photoGuids []string) (*AssetUrlsResponse, error)
 }
 
