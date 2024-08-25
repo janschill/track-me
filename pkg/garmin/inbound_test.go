@@ -45,7 +45,10 @@ func TestGarminClient(t *testing.T) {
 
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.httpStatusCode)
-				json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+				err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+				if err == nil || err.Error() != tt.expectedError {
+					t.Errorf("expected error %v, got %v", tt.expectedError, err)
+				}
 			}))
 			defer server.Close()
 

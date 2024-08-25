@@ -77,5 +77,9 @@ func (h *OutboundHandler) CreateOutboundEvent(w http.ResponseWriter, r *http.Req
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Payload received successfully."))
+	_, err = w.Write([]byte("Payload received successfully."))
+	if err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }

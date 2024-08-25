@@ -44,5 +44,9 @@ func (h *KudosHandler) CreateKudos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+	err = json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }

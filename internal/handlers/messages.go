@@ -70,18 +70,29 @@ func (h *MessageHandler) CreateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if m.SentToGarmin {
-		h.client.SendMessage(sender, message)
+		err = h.client.SendMessage(sender, message)
+		if err != nil {
+			log.Printf("Sent to Garmin failed %v", err)
+		}
 	}
 
-	h.repo.Messages.Create(m)
+	err = h.repo.Messages.Create(m)
+	if err != nil {
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	err = json.NewEncoder(w).Encode(map[string]string{
 		"message":      m.Message,
 		"name":         m.Name,
 		"timeStamp":    strconv.FormatInt(m.TimeStamp, 10),
 		"sentToGarmin": strconv.FormatBool(m.SentToGarmin),
 		"fromGamin":    strconv.FormatBool(m.FromGarmin),
 	})
+	if err != nil {
+		http.Error(w, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
 }
