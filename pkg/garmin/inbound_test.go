@@ -8,67 +8,86 @@ import (
 	"time"
 )
 
-func TestGarminClient(t *testing.T) {
-	tests := []struct {
-		name           string
-		message        string
-		rateLimitAllow bool
-		httpStatusCode int
-		expectedError  string
-	}{
-		{
-			name:           "Message length exceeds limit",
-			message:        "This is a very long message that exceeds the limit  a very long message that exceeds the limit This is a very long message that exceeds the limit  a very long message that exceeds the limit",
-			rateLimitAllow: true,
-			httpStatusCode: http.StatusOK,
-			expectedError:  "message length exceeds limit",
-		},
-		{
-			name:           "Rate limit exceeded",
-			message:        "Hello, World!",
-			rateLimitAllow: false,
-			httpStatusCode: http.StatusOK,
-			expectedError:  "rate limit exceeded",
-		},
-		{
-			name:           "Non-OK HTTP status code",
-			message:        "Hello, World!",
-			rateLimitAllow: true,
-			httpStatusCode: http.StatusInternalServerError,
-			expectedError:  "failed to send message, status code: 500",
-		},
+func TestGarminClient_MessageLengthExceedsLimit(t *testing.T) {
+	rateLimiter := NewRateLimiter(1, time.Minute)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+		if err != nil {
+			t.Errorf("failed to encode response: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	client := &Client{
+		httpClient:  server.Client(),
+		address:     server.URL,
+		imei:        "test-imei",
+		rateLimiter: rateLimiter,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			rateLimiter := NewRateLimiter(1, time.Minute)
+	message := "This is a very long message that exceeds the limit a very long message that exceeds the limit This is a very long message that exceeds the limit a very long message that exceeds the limit"
 
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(tt.httpStatusCode)
-				err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
-				if err == nil || err.Error() != tt.expectedError {
-					t.Errorf("expected error %v, got %v", tt.expectedError, err)
-				}
-			}))
-			defer server.Close()
+	err := client.SendMessage("test-sender", message)
+	expectedError := "message length exceeds limit"
+	if err == nil || err.Error() != expectedError {
+		t.Errorf("expected error %v, got %v", expectedError, err)
+	}
+}
 
-			client := &Client{
-				httpClient:  server.Client(),
-				address:     server.URL,
-				imei:        "test-imei",
-				rateLimiter: rateLimiter,
-			}
+func TestGarminClient_RateLimitExceeded(t *testing.T) {
+	rateLimiter := NewRateLimiter(1, time.Minute)
 
-			if !tt.rateLimitAllow {
-				rateLimiter.Allow("test-imei")
-				rateLimiter.Allow("test-imei")
-			}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+		if err != nil {
+			t.Errorf("failed to encode response: %v", err)
+		}
+	}))
+	defer server.Close()
 
-			err := client.SendMessage(tt.name, tt.message)
+	client := &Client{
+		httpClient:  server.Client(),
+		address:     server.URL,
+		imei:        "test-imei",
+		rateLimiter: rateLimiter,
+	}
 
-			if err == nil || err.Error() != tt.expectedError {
-				t.Errorf("expected error %v, got %v", tt.expectedError, err)
-			}
-		})
+	// Exceed the rate limit
+	rateLimiter.Allow("test-imei")
+	rateLimiter.Allow("test-imei")
+
+	err := client.SendMessage("test-sender", "Hello, World!")
+	expectedError := "rate limit exceeded"
+	if err == nil || err.Error() != expectedError {
+		t.Errorf("expected error %v, got %v", expectedError, err)
+	}
+}
+
+func TestGarminClient_NonOKHTTPStatusCode(t *testing.T) {
+	rateLimiter := NewRateLimiter(1, time.Minute)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+		if err != nil {
+			t.Errorf("failed to encode response: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	client := &Client{
+		httpClient:  server.Client(),
+		address:     server.URL,
+		imei:        "test-imei",
+		rateLimiter: rateLimiter,
+	}
+
+	err := client.SendMessage("test-sender", "Hello, World!")
+	expectedError := "failed to send message, status code: 500"
+	if err == nil || err.Error() != expectedError {
+		t.Errorf("expected error %v, got %v", expectedError, err)
 	}
 }
