@@ -1,8 +1,61 @@
-.PHONY: reset-db create-db destroy-db
-
+SOURCE_FILES?=./...
+TEST_PATTERN?=.
 DB_PATH="./data/trips.db"
 
-run:
+export GOBIN := $(shell pwd)/bin
+export PATH := $(GOBIN):$(PATH)
+
+setup:
+	go mod download
+.PHONY: setup
+
+test:
+	go test $(TEST_OPTIONS) -failfast -coverpkg=./... -covermode=atomic -coverprofile=coverage.txt $(SOURCE_FILES) -run $(TEST_PATTERN) -timeout=2m
+.PHONY: test
+
+cover: test
+	go tool cover -html=coverage.txt
+.PHONY: cover
+
+# Run all the linters
+lint: bin/golangci-lint
+	./bin/golangci-lint run ./...
+.PHONY: lint
+
+# gofmt and goimports all go files
+fmt:
+	go install golang.org/x/tools/cmd/goimports@v0.5
+	find . -name '*.go' | while read -r file; do gofmt -w -s "$$file"; goimports -w -local github.com/stripe/stripe-cli "$$file"; done
+.PHONY: fmt
+
+bin/golangci-lint:
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s $(GOLANGCI_LINT_VERSION)
+
+build:
+	go generate ./...
+	go build -o trackme cmd/server/main.go
+.PHONY: build
+
+build-all-platforms:
+	go generate ./...
+	env GOOS=darwin go build -o trackme-darwin cmd/server/main.go
+	env GOOS=linux go build -o trackme-linux cmd/server/main.go
+	env GOOS=windows go build -o trackme-windows.exe cmd/server/main.go
+.PHONY: build-all-platforms
+
+todo:
+	@grep \
+		--exclude-dir=vendor \
+		--exclude-dir=node_modules \
+		--exclude-dir=bin \
+		--exclude-dir=.git \
+		--exclude=Makefile \
+		--text \
+		--color \
+		-nRo -E ' TODO:.*|SkipNow' .
+.PHONY: todo
+
+dev:
 	@echo "Starting server"
 	go run cmd/server/main.go
 
