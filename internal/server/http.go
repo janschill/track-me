@@ -15,6 +15,7 @@ import (
 	"github.com/janschill/track-me/internal/repository"
 	"github.com/janschill/track-me/internal/service"
 	garmin "github.com/janschill/track-me/pkg/garmin"
+	icloud "github.com/janschill/track-me/pkg/icloud"
 )
 
 var conf *config.Config
@@ -30,7 +31,10 @@ func newHTTPHandler(repo *repository.Repository, dayService *service.DayService,
 	mux.Handle("/messages", sentryHandler.Handle(http.HandlerFunc(handlers.NewMessageHandler(repo, garminClient).CreateMessage)))
 	mux.Handle("/kudos", sentryHandler.Handle(http.HandlerFunc(handlers.NewKudosHandler(repo).CreateKudos)))
 	mux.Handle("/garmin-outbound", sentryHandler.Handle(http.HandlerFunc(garmin.NewOutboundHandler(garminService.ProcessPayload).CreateOutboundEvent)))
-	mux.Handle("/photos", sentryHandler.Handle(http.HandlerFunc(handlers.NewICloudHandler().Photos)))
+	iCloudConf := icloud.Config{
+		Token: conf.ICloudAlbumToken,
+	}
+	mux.Handle("/photos", sentryHandler.Handle(http.HandlerFunc(icloud.NewICloudHandler(iCloudConf).Photos)))
 	mux.Handle("/error", sentryHandler.Handle(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		panic("Test error for Sentry")
 	})))

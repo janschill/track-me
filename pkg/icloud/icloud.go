@@ -1,4 +1,4 @@
-package handlers
+package icloud
 
 import (
 	"bytes"
@@ -6,18 +6,29 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 )
 
 type ICloudHandler struct {
-	cache *Cache
+	cache  CacheInterface
+	config Config
+	getWebStream   func(base_url string) (*StreamResponse, error)
+	getWebAssetUrls func(base_url string, photoGuids []string) (*AssetUrlsResponse, error)
 }
 
-func NewICloudHandler() *ICloudHandler {
-	return &ICloudHandler{
-		cache: NewCache(),
+type Config struct {
+	Token string
+}
+
+func NewICloudHandler(config Config) *ICloudHandler {
+	handler := &ICloudHandler{
+		cache:  NewCache(),
+		config: config,
 	}
+	handler.getWebStream = handler.defaultGetWebStream
+	handler.getWebAssetUrls = handler.defaultGetWebAssetUrls
+
+	return handler
 }
 
 type StreamResponse struct {
@@ -50,7 +61,7 @@ type Location struct {
 	Hosts  []string `json:"hosts"`
 }
 
-func getWebStream(base_url string) (*StreamResponse, error) {
+func (h *ICloudHandler) defaultGetWebStream(base_url string) (*StreamResponse, error) {
 	url := base_url + "/webstream"
 	body := map[string]interface{}{
 		"streamCtag": nil,
@@ -74,7 +85,7 @@ func getWebStream(base_url string) (*StreamResponse, error) {
 	return &streamResponse, nil
 }
 
-func getWebAssetUrls(base_url string, photoGuids []string) (*AssetUrlsResponse, error) {
+func (h *ICloudHandler) defaultGetWebAssetUrls(base_url string, photoGuids []string) (*AssetUrlsResponse, error) {
 	url := base_url + "/webasseturls"
 	body := map[string]interface{}{
 		"photoGuids": photoGuids,
@@ -104,12 +115,11 @@ func (h *ICloudHandler) Photos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := "B1A55Z2WMR2vuY"
-	partition := "72"
-	base_url := "https://p" + partition + "-sharedstreams.icloud.com/" + token + "/sharedstreams"
+	partition := getPartitionFromToken(h.config.Token)
+	base_url := "https://p" + partition + "-sharedstreams.icloud.com/" + h.config.Token + "/sharedstreams"
 
-	cacheKeyStream := "stream_" + token
-	cacheKeyAssets := "assets_" + token
+	cacheKeyStream := "stream_" + h.config.Token
+	cacheKeyAssets := "assets_" + h.config.Token
 
 	var stream *StreamResponse
 	var err error
@@ -118,7 +128,7 @@ func (h *ICloudHandler) Photos(w http.ResponseWriter, r *http.Request) {
 		log.Print("Cache hit for stream")
 		stream = cachedStream.(*StreamResponse)
 	} else {
-		stream, err = getWebStream(base_url)
+		stream, err = h.getWebStream(base_url)
 		if err != nil {
 			http.Error(w, "Failed to get web stream.", http.StatusInternalServerError)
 			return
@@ -136,7 +146,7 @@ func (h *ICloudHandler) Photos(w http.ResponseWriter, r *http.Request) {
 		log.Print("Cache hit for assets")
 		assetsUrl = cachedAssets.(*AssetUrlsResponse)
 	} else {
-		assetsUrl, err = getWebAssetUrls(base_url, photoGuids)
+		assetsUrl, err = h.getWebAssetUrls(base_url, photoGuids)
 		if err != nil {
 			http.Error(w, "Failed to get web asset URLs.", http.StatusInternalServerError)
 			return
@@ -172,39 +182,4 @@ func (h *ICloudHandler) Photos(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
-}
-
-type Cache struct {
-	mu    sync.RWMutex
-	items map[string]cacheItem
-}
-
-type cacheItem struct {
-	value      interface{}
-	expiration int64
-}
-
-func NewCache() *Cache {
-	return &Cache{
-		items: make(map[string]cacheItem),
-	}
-}
-
-func (c *Cache) Set(key string, value interface{}, duration time.Duration) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.items[key] = cacheItem{
-		value:      value,
-		expiration: time.Now().Add(duration).UnixNano(),
-	}
-}
-
-func (c *Cache) Get(key string) (interface{}, bool) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	item, found := c.items[key]
-	if !found || time.Now().UnixNano() > item.expiration {
-		return nil, false
-	}
-	return item.value, true
 }
