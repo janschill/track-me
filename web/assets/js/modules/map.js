@@ -21,7 +21,7 @@ export function initializeMap() {
   }
 
   // Load full planned route
-  const url = '/static/gpx/Great_Divide_2024_(From_Montana).gpx'
+  const url = '/static/gpx/Great_Divide_2024.gpx'
   new L.GPX(url, {
     async: true,
     markers: {
