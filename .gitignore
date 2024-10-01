@@ -8,3 +8,6 @@ coverage.*
 cover.out
 bin/
 *.db
+.direnv
+.envrc
+.vscode/

@@ -30,17 +30,17 @@ func main() {
 	}
 
 	switch operation {
-	case "create":
+	case "create-db":
 		db.CreateTables(dbPath)
-	case "reset":
+	case "reset-db":
 		// db.ResetDB(dbPath)
-	case "destroy":
+	case "destroy-db":
 		db.DestroyDB(dbPath)
-	case "seed":
+	case "seed-db":
 		db.Seed(dbPath)
-	case "clear":
+	case "clear-db":
 		db.Clear(dbPath)
-	case "aggregate":
+	case "aggregate-db":
 		fmt.Println("TODO: not supported")
 		return
 		// if day == "" {
