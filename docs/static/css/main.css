@@ -18,7 +18,7 @@
 
 @font-face {
   font-family: 'Neue Regrade';
-  src: url('http://localhost:8080/static/fonts/neue/Neue\ Regrade\ Bold.otf') format('opentype');
+  src: url('../fonts/neue/Neue Regrade Bold.otf') format('opentype');
 }
 
 body {
